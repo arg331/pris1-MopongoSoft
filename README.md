@@ -36,8 +36,8 @@ instalaciones, usuarios y bloqueos. Hito 1: **26/10/2026**.
 grupo07-sadual/
 ├── README.md
 ├── .gitignore
-├── frontend/          → App React (ver frontend/README.md)
-├── backend/           → API Laravel (ver backend/README.md)
+├── frontend/          → App Angular (ver frontend/README.md)
+├── backend/           → API Spring Boot (ver backend/README.md)
 ├── database/
 │   ├── 01_schema.sql  → Esquema completo (14 tablas, triggers, funciones y vistas)
 │   ├── 02_seed.sql    → Datos de demostración para el Hito 1
