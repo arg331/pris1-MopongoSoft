@@ -32,6 +32,7 @@ instalaciones, usuarios y bloqueos. Hito 1: **26/10/2026**.
 
 ## Estructura del repositorio
 
+```
 grupo07-sadual/
 ├── README.md
 ├── .gitignore
@@ -47,25 +48,35 @@ grupo07-sadual/
     └── modelo-datos/
         ├── MER.dot / MER.png
         └── ModeloRelacional.dot / ModeloRelacional.pdf
+```
 
 ## Puesta en marcha (entorno de desarrollo)
 
 ### 1. Base de datos
+
+```bash
 createdb sadual
 psql -d sadual -f database/01_schema.sql
 psql -d sadual -f database/02_seed.sql
 psql -d sadual -f database/03_pruebas.sql   # opcional, verificación
+```
 
 ### 2. Backend (Laravel)
+
+```bash
 cd backend
 composer install
 cp .env.example .env    # configurar conexión a PostgreSQL
 php artisan serve
+```
 
 ### 3. Frontend (React)
+
+```bash
 cd frontend
 npm install
 npm run dev
+```
 
 Credenciales de demostración (entorno de desarrollo): cualquier email `*.demo@ual.es` /
 `*.demo@correo.test` con contraseña `Sadual2026!`.
