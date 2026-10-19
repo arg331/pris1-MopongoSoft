@@ -14,7 +14,6 @@ Consume la API REST del backend Spring Boot (ver [`../backend`](../backend)).
 ## Puesta en marcha
 
 El proyecto se generará en esta carpeta con Angular CLI:
-
 ```bash
 npm install -g @angular/cli
 ng new frontend --directory . --routing --style=scss
