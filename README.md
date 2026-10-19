@@ -40,8 +40,8 @@ instalaciones, usuarios y bloqueos. Hito 1: **26/10/2026**.
 
 | Capa | Tecnología |
 |---|---|
-| Frontend | React + Vite, React Router, Tailwind CSS, Axios |
-| Backend | PHP 8.3+ con Laravel (API REST JSON), Laravel Sanctum |
+| Frontend | Angular, TypeScript, Angular Material, RxJS |
+| Backend | Java 21 + Spring Boot (Spring Web, Spring Data JPA, Spring Security, JWT) |
 | Base de datos | PostgreSQL 16 (el script requiere 15 o superior) |
 | Otras herramientas | Git/GitHub (Issues, Projects, pull requests), Docker Compose, Postman, Graphviz |
 
@@ -51,8 +51,8 @@ instalaciones, usuarios y bloqueos. Hito 1: **26/10/2026**.
 pris1-MopongoSoft/
 ├── README.md
 ├── .gitignore
-├── frontend/          → App React + Vite (ver frontend/README.md)
-├── backend/           → API Laravel (ver backend/README.md)
+├── frontend/          → App Angular (ver frontend/README.md)
+├── backend/           → API Spring Boot (ver backend/README.md)
 ├── database/
 │   ├── 01_schema.sql  → Esquema completo (14 tablas, triggers, funciones y vistas)
 │   └── 02_seed.sql    → Datos de demostración para el Hito 1
@@ -72,23 +72,22 @@ psql -d sadual -f database/01_schema.sql
 psql -d sadual -f database/02_seed.sql
 ```
 
-### 2. Backend (Laravel)
+### 2. Backend (Spring Boot)
 
 > Los proyectos de backend y frontend se generan esta semana; los comandos son los previstos.
 
 ```bash
 cd backend
-composer install
-cp .env.example .env    # configurar conexión a PostgreSQL
-php artisan serve
+# configurar application.properties con la conexión a PostgreSQL
+./mvnw spring-boot:run
 ```
 
-### 3. Frontend (React)
+### 3. Frontend (Angular)
 
 ```bash
 cd frontend
 npm install
-npm run dev
+ng serve
 ```
 
 Credenciales de demostración (entorno de desarrollo): cualquier email `*.demo@ual.es` /
