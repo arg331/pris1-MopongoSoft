@@ -1,0 +1,19 @@
+# Sistema / editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Frontend (React + Vite)
+frontend/node_modules/
+frontend/dist/
+frontend/.env*
+
+# Backend (Laravel)
+backend/vendor/
+backend/.env
+backend/storage/*.key
+backend/public/storage
+
+# Logs
+*.log

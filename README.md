@@ -21,33 +21,45 @@ Que un usuario de la UAL pueda iniciar sesión, consultar la disponibilidad de u
 y reservarla sin riesgo de doble reserva, con un panel básico de administración para gestionar
 instalaciones, usuarios y bloqueos. Hito 1: **26/10/2026**.
 
+### Funcionalidades previstas para la Release V1
+
+> Propuesta de priorización MoSCoW, pendiente de validación por el Product Owner.
+
+| Prioridad | Funcionalidad |
+|---|---|
+| **Must** | Inicio de sesión con perfiles (alumnado, PDI, PAS, externo, administración) |
+| **Must** | Consulta del catálogo de instalaciones |
+| **Must** | Consulta de disponibilidad por franjas |
+| **Must** | Crear y cancelar reservas sin dobles reservas |
+| **Should** | Panel de administración: alta y baja de instalaciones |
+| **Should** | Gestión básica de usuarios |
+| **Should** | Bloqueo de instalaciones (docencia, mantenimiento) |
+| **Could** | Eventos masivos, escuelas infantil-juveniles y reservas institucionales (Variación 7, Incremento 2) |
+
 ## Tecnologías
 
 | Capa | Tecnología |
 |---|---|
 | Frontend | React + Vite, React Router, Tailwind CSS, Axios |
 | Backend | PHP 8.3+ con Laravel (API REST JSON), Laravel Sanctum |
-| Base de datos | PostgreSQL 16 |
+| Base de datos | PostgreSQL 16 (el script requiere 15 o superior) |
 | Otras herramientas | Git/GitHub (Issues, Projects, pull requests), Docker Compose, Postman, Graphviz |
 
 ## Estructura del repositorio
 
 ```
-grupo07-sadual/
+pris1-MopongoSoft/
 ├── README.md
 ├── .gitignore
-├── frontend/          → App Angular (ver frontend/README.md)
-├── backend/           → API Spring Boot (ver backend/README.md)
+├── frontend/          → App React + Vite (ver frontend/README.md)
+├── backend/           → API Laravel (ver backend/README.md)
 ├── database/
 │   ├── 01_schema.sql  → Esquema completo (14 tablas, triggers, funciones y vistas)
-│   ├── 02_seed.sql    → Datos de demostración para el Hito 1
-│   └── 03_pruebas.sql → Batería de verificación de las reglas críticas
+│   └── 02_seed.sql    → Datos de demostración para el Hito 1
 └── docs/
-    ├── funcionalidades-v1.md   → Priorización MoSCoW
-    ├── G1/ G2/ G3/ G4/         → Entregas consolidadas del curso
     └── modelo-datos/
-        ├── MER.dot / MER.png
-        └── ModeloRelacional.dot / ModeloRelacional.pdf
+        ├── MER.png                → Modelo Entidad-Relación
+        └── ModeloRelacional.pdf   → Modelo relacional (PostgreSQL)
 ```
 
 ## Puesta en marcha (entorno de desarrollo)
@@ -58,10 +70,11 @@ grupo07-sadual/
 createdb sadual
 psql -d sadual -f database/01_schema.sql
 psql -d sadual -f database/02_seed.sql
-psql -d sadual -f database/03_pruebas.sql   # opcional, verificación
 ```
 
 ### 2. Backend (Laravel)
+
+> Los proyectos de backend y frontend se generan esta semana; los comandos son los previstos.
 
 ```bash
 cd backend
@@ -86,9 +99,9 @@ Credenciales de demostración (entorno de desarrollo): cualquier email `*.demo@u
 - `main` protegida: solo recibe cambios por pull request revisado por otro integrante.
 - Una rama por funcionalidad: `feature/F04-crear-reserva`, `fix/...`, `docs/...`.
 - Commits con prefijo: `feat:`, `fix:`, `docs:`, `db:`.
-- Cada funcionalidad (F01–F11) es un Issue en GitHub Projects, con su criterio de aceptación.
+- Cada funcionalidad de la Release V1 es un Issue en GitHub Projects, con su criterio de aceptación.
 
 ## Documentación
 
-La documentación completa de análisis y diseño (G1–G4) está en `docs/`, incluyendo el informe
-oficial de esta entrega: `docs/G4/G4_Grupo07_PreparacionTecnica.pdf`.
+El modelo de datos (MER y modelo relacional) está en `docs/modelo-datos/`. El resto de la
+documentación del curso (G1–G4) se irá añadiendo a `docs/`.
