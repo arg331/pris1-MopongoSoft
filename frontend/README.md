@@ -1,6 +1,7 @@
 # Frontend · SAD-UAL
 
-Aplicación web (adaptada a móvil) en **React + Vite**, con React Router, Tailwind CSS y Axios.
+Aplicación web (adaptada a móvil) en **Angular** con TypeScript, Angular Material y RxJS.
+Consume la API REST del backend Spring Boot (ver [`../backend`](../backend)).
 
 **Responsable:** Daniel Almendros Arévalo · **Respaldo:** Abel Rodríguez Gutiérrez
 
@@ -10,4 +11,19 @@ Aplicación web (adaptada a móvil) en **React + Vite**, con React Router, Tailw
 - Listado de instalaciones y consulta de disponibilidad.
 - Reserva y cancelación ("Mis reservas").
 
-El proyecto se generará en esta carpeta con `npm create vite@latest`.
+## Puesta en marcha
+
+El proyecto se generará en esta carpeta con Angular CLI:
+
+```bash
+npm install -g @angular/cli
+ng new frontend --directory . --routing --style=scss
+ng add @angular/material
+```
+
+Para arrancarlo en desarrollo:
+
+```bash
+npm install
+ng serve
+```

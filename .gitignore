@@ -3,17 +3,19 @@
 Thumbs.db
 .vscode/
 .idea/
+*.iml
 
-# Frontend (React + Vite)
+# Frontend (Angular)
 frontend/node_modules/
 frontend/dist/
-frontend/.env*
+frontend/.angular/
+frontend/coverage/
 
-# Backend (Laravel)
-backend/vendor/
-backend/.env
-backend/storage/*.key
-backend/public/storage
+# Backend (Java 21 + Spring Boot, Maven)
+backend/target/
+backend/.mvn/wrapper/maven-wrapper.jar
+backend/src/main/resources/application-local.properties
 
-# Logs
+# Variables de entorno y logs
+.env
 *.log
