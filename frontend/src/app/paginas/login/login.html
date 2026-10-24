@@ -1,0 +1,62 @@
+<main class="login">
+  <section class="tarjeta" aria-labelledby="titulo-login">
+    <header>
+      <span class="marca" aria-hidden="true"><mat-icon>sports_tennis</mat-icon></span>
+      <h1 id="titulo-login">Reservas deportivas UAL</h1>
+      <p>Inicia sesión con tu cuenta para reservar instalaciones.</p>
+    </header>
+
+    @if (sesionCaducada && !error()) {
+      <p class="aviso" role="status">Tu sesión ha caducado. Vuelve a iniciar sesión.</p>
+    }
+    @if (error(); as mensaje) {
+      <p class="aviso error" role="alert">{{ mensaje }}</p>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="entrar()" novalidate>
+      <mat-form-field appearance="outline">
+        <mat-label>Email</mat-label>
+        <input matInput type="email" formControlName="email" autocomplete="username" />
+        @if (form.controls.email.hasError('required')) {
+          <mat-error>El email es obligatorio</mat-error>
+        } @else if (form.controls.email.hasError('email')) {
+          <mat-error>El email no tiene un formato válido</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Contraseña</mat-label>
+        <input matInput [type]="verPassword() ? 'text' : 'password'" formControlName="password"
+               autocomplete="current-password" />
+        <button mat-icon-button matSuffix type="button" (click)="verPassword.set(!verPassword())"
+                [attr.aria-label]="verPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+          <mat-icon>{{ verPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+        @if (form.controls.password.hasError('required')) {
+          <mat-error>La contraseña es obligatoria</mat-error>
+        }
+      </mat-form-field>
+
+      <button mat-flat-button type="submit" class="entrar" [disabled]="enviando()">
+        @if (enviando()) {
+          <mat-spinner diameter="20" />
+        } @else {
+          Entrar
+        }
+      </button>
+    </form>
+
+    @if (modoDesarrollo) {
+      <aside class="demo" aria-label="Usuarios de demostración">
+        <p>Entorno de desarrollo · usuarios demo (contraseña <code>Sadual2026!</code>)</p>
+        <div class="chips">
+          <button type="button" (click)="usarDemo('alumna.demo@ual.es')">Alumnado</button>
+          <button type="button" (click)="usarDemo('pdi.demo@ual.es')">PDI</button>
+          <button type="button" (click)="usarDemo('pas.demo@ual.es')">PAS</button>
+          <button type="button" (click)="usarDemo('externo.demo@correo.test')">Externo</button>
+          <button type="button" (click)="usarDemo('admin.deportes@ual.es')">Admin</button>
+        </div>
+      </aside>
+    }
+  </section>
+</main>

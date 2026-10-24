@@ -1,0 +1,47 @@
+.pagina { max-width: 760px; margin: 0 auto; }
+.cabecera { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+h1 { font: var(--mat-sys-headline-small); margin: 0; }
+h2 { font: var(--mat-sys-title-medium); margin: 24px 0 8px; color: var(--mat-sys-on-surface-variant); }
+
+.reserva {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  border-radius: 14px;
+  background: var(--mat-sys-surface);
+}
+.reserva.pasada { opacity: .75; }
+.fecha {
+  display: grid;
+  place-items: center;
+  min-width: 52px;
+  padding: 6px 0;
+  border-radius: 10px;
+  background: var(--mat-sys-primary-container);
+  color: var(--mat-sys-on-primary-container);
+}
+.dia { font: var(--mat-sys-title-large); line-height: 1; }
+.mes { font: var(--mat-sys-label-small); text-transform: uppercase; }
+.info { flex: 1; display: grid; gap: 2px; }
+.info span { color: var(--mat-sys-on-surface-variant); }
+.info span:first-letter { text-transform: uppercase; }
+.estado { font: var(--mat-sys-label-small); }
+.estado.cancelada { color: var(--mat-sys-error) !important; }
+.acciones { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.pregunta { font: var(--mat-sys-label-large); }
+
+.aviso {
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--mat-sys-secondary-container);
+  color: var(--mat-sys-on-secondary-container);
+}
+.aviso.error { background: var(--mat-sys-error-container); color: var(--mat-sys-on-error-container); }
+.vacio { color: var(--mat-sys-on-surface-variant); }
+
+@media (max-width: 520px) {
+  .reserva { flex-wrap: wrap; }
+  .acciones { width: 100%; }
+}

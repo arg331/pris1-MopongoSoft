@@ -1,0 +1,132 @@
+<div class="pagina">
+  <section class="catalogo" aria-labelledby="titulo-catalogo">
+    <h1 id="titulo-catalogo">Instalaciones</h1>
+
+    @if (!puedeReservar()) {
+      <p class="nota" role="note">
+        De momento las reservas individuales son solo para la comunidad universitaria.
+        Puedes consultar la disponibilidad.
+      </p>
+    }
+
+    <div class="filtro" role="group" aria-label="Filtrar por tipo">
+      <button type="button" class="pastilla" [class.activa]="filtroTipo() === null"
+              [attr.aria-pressed]="filtroTipo() === null" (click)="filtrar(null)">Todas</button>
+      @for (tipo of tipos(); track tipo.id) {
+        <button type="button" class="pastilla" [class.activa]="filtroTipo() === tipo.id"
+                [attr.aria-pressed]="filtroTipo() === tipo.id" (click)="filtrar(tipo.id)">{{ tipo.nombre }}</button>
+      }
+    </div>
+
+    @if (cargandoCatalogo()) {
+      <mat-progress-bar mode="indeterminate" />
+    }
+
+    <ul class="lista" role="list">
+      @for (inst of instalaciones(); track inst.id) {
+        <li>
+          <button type="button" class="instalacion" [class.activa]="seleccionada()?.id === inst.id"
+                  [attr.aria-pressed]="seleccionada()?.id === inst.id" (click)="seleccionar(inst)">
+            <span class="nombre">{{ inst.nombre }}</span>
+            <span class="meta">{{ inst.tipo }} · {{ inst.ubicacion }}</span>
+            <span class="meta">Aforo {{ inst.aforo }} · franjas de {{ inst.duracionFranjaMin }} min</span>
+          </button>
+        </li>
+      } @empty {
+        @if (!cargandoCatalogo()) {
+          <li class="vacio">No hay instalaciones de este tipo.</li>
+        }
+      }
+    </ul>
+  </section>
+
+  <section #detalle class="detalle" aria-live="polite">
+    @if (aviso(); as a) {
+      <div class="aviso" [class.error]="a.tipo === 'error'" [attr.role]="a.tipo === 'error' ? 'alert' : 'status'">
+        <mat-icon>{{ a.tipo === 'ok' ? 'check_circle' : 'error' }}</mat-icon>
+        <span>{{ a.texto }}</span>
+        @if (a.tipo === 'ok') {
+          <a mat-button routerLink="/mis-reservas">Ver mis reservas</a>
+        }
+      </div>
+    }
+
+    @if (seleccionada(); as inst) {
+      <header class="cabecera">
+        <div>
+          <h2>{{ inst.nombre }}</h2>
+          <p>{{ inst.tipo }} · {{ inst.ubicacion }}</p>
+        </div>
+        <div class="selector-dia">
+          <button mat-icon-button type="button" (click)="moverDia(-1)" [disabled]="esHoy()" aria-label="Día anterior">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Fecha</mat-label>
+            <input matInput [matDatepicker]="selectorFecha" [min]="hoy" [value]="fecha()"
+                   (dateChange)="cambiarFecha($event.value)" />
+            <mat-datepicker-toggle matIconSuffix [for]="selectorFecha" />
+            <mat-datepicker #selectorFecha />
+          </mat-form-field>
+          <button mat-icon-button type="button" (click)="moverDia(1)" aria-label="Día siguiente">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+        </div>
+      </header>
+
+      <p class="resumen">
+        {{ fecha() | date: 'EEEE d \'de\' MMMM' }}
+        @if (disponibilidad(); as d) {
+          · {{ libres() }} {{ libres() === 1 ? 'franja libre' : 'franjas libres' }}
+        }
+      </p>
+
+      @if (cargandoFranjas()) {
+        <mat-progress-bar mode="indeterminate" />
+      }
+
+      @if (disponibilidad(); as d) {
+        <p class="reglas">
+          <mat-icon aria-hidden="true">info</mat-icon>
+          Reserva con al menos {{ d.antelacionMinimaHoras }} horas de antelación · una reserva por día
+        </p>
+        @if (d.franjas.length === 0) {
+          <p class="vacio">La instalación no abre este día.</p>
+        } @else {
+          <div class="franjas" role="group" aria-label="Franjas horarias">
+            @for (f of d.franjas; track f.horaInicio) {
+              <button type="button" class="franja {{ f.estado.toLowerCase() }}"
+                      [class.elegida]="franjaElegida()?.horaInicio === f.horaInicio"
+                      [disabled]="f.estado !== 'LIBRE' || !puedeReservar()" (click)="elegir(f)"
+                      [attr.aria-label]="horaCorta(f.horaInicio) + ' a ' + horaCorta(f.horaFin) + ', ' + etiqueta(f)">
+                <span class="hora">{{ horaCorta(f.horaInicio) }}–{{ horaCorta(f.horaFin) }}</span>
+                <span class="estado">{{ etiqueta(f) }}</span>
+              </button>
+            }
+          </div>
+        }
+      }
+
+      @if (franjaElegida(); as f) {
+        <div class="confirmar">
+          <p>
+            <strong>{{ inst.nombre }}</strong><br />
+            {{ fecha() | date: 'EEEE d \'de\' MMMM' }}, {{ horaCorta(f.horaInicio) }}–{{ horaCorta(f.horaFin) }}
+          </p>
+          <div class="acciones">
+            <button mat-button type="button" class="cambiar" (click)="franjaElegida.set(null)">Cambiar</button>
+            <button mat-flat-button type="button" class="boton-confirmar" (click)="confirmarReserva()"
+                    [disabled]="reservando()">
+              {{ reservando() ? 'Reservando…' : 'Confirmar reserva' }}
+            </button>
+          </div>
+        </div>
+      }
+    } @else {
+      <div class="placeholder">
+        <mat-icon>touch_app</mat-icon>
+        <p>Elige una instalación para ver sus franjas y reservar.</p>
+      </div>
+    }
+  </section>
+</div>
