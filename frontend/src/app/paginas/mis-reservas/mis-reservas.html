@@ -1,0 +1,64 @@
+<section class="pagina" aria-labelledby="titulo-mis-reservas">
+  <header class="cabecera">
+    <h1 id="titulo-mis-reservas">Mis reservas</h1>
+    <a mat-flat-button routerLink="/instalaciones"><mat-icon>add</mat-icon> Nueva reserva</a>
+  </header>
+
+  @if (aviso(); as texto) {
+    <p class="aviso" role="status">{{ texto }}</p>
+  }
+  @if (error(); as texto) {
+    <p class="aviso error" role="alert">{{ texto }}</p>
+  }
+  @if (cargando()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+
+  <h2>Próximas</h2>
+  @for (r of proximas(); track r.id) {
+    <article class="reserva" [attr.aria-label]="'Reserva ' + r.instalacion">
+      <div class="fecha" aria-hidden="true">
+        <span class="dia">{{ desdeFechaIso(r.fecha) | date: 'd' }}</span>
+        <span class="mes">{{ desdeFechaIso(r.fecha) | date: 'MMM' }}</span>
+      </div>
+      <div class="info">
+        <strong>{{ r.instalacion }}</strong>
+        <span>{{ desdeFechaIso(r.fecha) | date: 'EEEE' }} · {{ horaCorta(r.horaInicio) }}–{{ horaCorta(r.horaFin) }}</span>
+        <span class="estado {{ r.estado.toLowerCase() }}">{{ etiqueta(r.estado) }}</span>
+      </div>
+      <div class="acciones">
+        @if (confirmando() === r.id) {
+          <span class="pregunta">¿Cancelar?</span>
+          <button mat-button type="button" (click)="confirmando.set(null)">No</button>
+          <button mat-flat-button type="button" class="si-cancelar" (click)="cancelar(r)">Sí, cancelar</button>
+        } @else {
+          <button mat-stroked-button type="button" class="cancelar" (click)="pedirConfirmacion(r.id)"
+                  [disabled]="cancelando() === r.id">
+            {{ cancelando() === r.id ? 'Cancelando…' : 'Cancelar' }}
+          </button>
+        }
+      </div>
+    </article>
+  } @empty {
+    @if (!cargando()) {
+      <p class="vacio">No tienes reservas próximas.</p>
+    }
+  }
+
+  @if (historial().length > 0) {
+    <h2>Historial</h2>
+    @for (r of historial(); track r.id) {
+      <article class="reserva pasada" [attr.aria-label]="'Reserva ' + r.instalacion">
+        <div class="fecha" aria-hidden="true">
+          <span class="dia">{{ desdeFechaIso(r.fecha) | date: 'd' }}</span>
+          <span class="mes">{{ desdeFechaIso(r.fecha) | date: 'MMM' }}</span>
+        </div>
+        <div class="info">
+          <strong>{{ r.instalacion }}</strong>
+          <span>{{ horaCorta(r.horaInicio) }}–{{ horaCorta(r.horaFin) }}</span>
+          <span class="estado {{ r.estado.toLowerCase() }}">{{ etiqueta(r.estado) }}</span>
+        </div>
+      </article>
+    }
+  }
+</section>

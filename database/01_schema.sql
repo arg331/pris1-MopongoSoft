@@ -36,9 +36,9 @@ DROP TABLE IF EXISTS inscripcion_escuela, menor, escuela,
 -- 1. NÚCLEO · INCREMENTO 1 (RELEASE V1)
 -- ---------------------------------------------------------------------
 
--- Perfiles de acceso (RBAC). Las reglas que dependen del perfil se
--- parametrizan aquí para no tener que tocar código cuando el cliente
--- responda a P1 y P2 (límite de reservas y antelación).
+-- Perfiles de acceso (RBAC). max_reservas_semana y antelacion_max_dias quedan
+-- como parámetros por perfil para el futuro: con P1/P2 el límite vigente es
+-- 1 reserva al día (uq_reserva_usuario_dia) y sin antelación máxima.
 CREATE TABLE rol (
     id_rol               SMALLINT    GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     codigo               VARCHAR(20) NOT NULL UNIQUE,
@@ -133,6 +133,11 @@ CREATE TABLE reserva (
 );
 
 CREATE INDEX ix_reserva_usuario     ON reserva (id_usuario, fecha);
+
+-- P1: una sola reserva activa por usuario y día. Las reservas institucionales
+-- (Variación 7, id_entidad no nulo) quedan fuera de este límite.
+CREATE UNIQUE INDEX uq_reserva_usuario_dia ON reserva (id_usuario, fecha)
+    WHERE estado IN ('PENDIENTE','CONFIRMADA') AND id_entidad IS NULL;
 CREATE INDEX ix_reserva_instalacion ON reserva (id_instalacion, fecha);
 
 -- ---------------------------------------------------------------------
@@ -208,11 +213,12 @@ CREATE TABLE inscripcion_escuela (
     PRIMARY KEY (id_escuela, id_menor)
 );
 
--- Penalizaciones por no presentarse (pendiente de confirmar P3 con el cliente).
+-- P3: quien no se presenta a una reserva confirmada no puede reservar el resto
+-- de esa semana. La sanción la crea el trigger tg_sancionar_no_presentado.
 CREATE TABLE sancion (
     id_sancion    INTEGER      GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     id_usuario    INTEGER      NOT NULL REFERENCES usuario (id_usuario),
-    id_reserva    INTEGER      REFERENCES reserva (id_reserva),
+    id_reserva    INTEGER      UNIQUE REFERENCES reserva (id_reserva),  -- MER "origina" 1:1
     motivo        VARCHAR(255) NOT NULL,
     fecha_inicio  DATE         NOT NULL,
     fecha_fin     DATE         NOT NULL,
@@ -256,6 +262,43 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER tg_validar_reserva
     BEFORE INSERT OR UPDATE OF fecha, hora_inicio, hora_fin, estado, id_instalacion
     ON reserva FOR EACH ROW EXECUTE FUNCTION fn_validar_reserva();
+
+-- R-04 (P3). Marcar una reserva como NO_PRESENTADO genera la sanción: desde el día
+--       de la reserva hasta el domingo de esa semana. Una reserva → una sanción.
+CREATE OR REPLACE FUNCTION fn_sancionar_no_presentado() RETURNS trigger AS $$
+BEGIN
+    IF NEW.estado = 'NO_PRESENTADO' AND OLD.estado IS DISTINCT FROM 'NO_PRESENTADO' THEN
+        INSERT INTO sancion (id_usuario, id_reserva, motivo, fecha_inicio, fecha_fin)
+        VALUES (NEW.id_usuario, NEW.id_reserva,
+                'No presentado a la reserva ' || NEW.id_reserva,
+                NEW.fecha,
+                (date_trunc('week', NEW.fecha::TIMESTAMP) + INTERVAL '6 days')::DATE)
+        ON CONFLICT (id_reserva) DO NOTHING;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER tg_sancionar_no_presentado
+    AFTER UPDATE OF estado ON reserva
+    FOR EACH ROW EXECUTE FUNCTION fn_sancionar_no_presentado();
+
+-- R-05 (P7). Un bloqueo del administrador tiene prioridad: cancela las reservas
+--       activas que se solapan con él.
+CREATE OR REPLACE FUNCTION fn_bloqueo_cancela_reservas() RETURNS trigger AS $$
+BEGIN
+    UPDATE reserva
+       SET estado = 'CANCELADA', fecha_cancelacion = CURRENT_TIMESTAMP
+     WHERE id_instalacion = NEW.id_instalacion
+       AND estado IN ('PENDIENTE','CONFIRMADA')
+       AND tsrange(fecha + hora_inicio, fecha + hora_fin) && tsrange(NEW.inicio, NEW.fin);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER tg_bloqueo_cancela_reservas
+    AFTER INSERT OR UPDATE OF inicio, fin, id_instalacion ON bloqueo
+    FOR EACH ROW EXECUTE FUNCTION fn_bloqueo_cancela_reservas();
 
 -- R-02. Control de aforo de eventos masivos (Variación 7).
 CREATE OR REPLACE FUNCTION fn_aforo_evento() RETURNS trigger AS $$

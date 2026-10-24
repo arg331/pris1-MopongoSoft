@@ -7,8 +7,8 @@
 
 BEGIN;
 
--- Perfiles. Límites provisionales hasta que el Servicio de Deportes
--- responda a P1 (reservas por semana) y P2 (antelación).
+-- Perfiles. Límites por perfil reservados para el futuro (ver 01_schema.sql).
+-- EXTERNO existe pero, por P4, de momento no hace reservas individuales.
 INSERT INTO rol (codigo, nombre, max_reservas_semana, antelacion_max_dias) VALUES
   ('ALUMNADO', 'Alumnado',                                  3,  7),
   ('PDI',      'Personal Docente e Investigador',           3,  7),

@@ -1,0 +1,28 @@
+@if (auth.usuario(); as usuario) {
+  <header class="barra">
+    <a class="marca" routerLink="/instalaciones">
+      <mat-icon aria-hidden="true">sports_tennis</mat-icon>
+      <span>SAD-UAL</span>
+    </a>
+    <nav aria-label="Principal">
+      <a mat-button routerLink="/instalaciones" routerLinkActive="activo">
+        <mat-icon>calendar_month</mat-icon><span class="texto">Reservar</span>
+      </a>
+      <a mat-button routerLink="/mis-reservas" routerLinkActive="activo">
+        <mat-icon>event_available</mat-icon><span class="texto">Mis reservas</span>
+      </a>
+    </nav>
+    <div class="usuario">
+      <span class="nombre">{{ usuario.nombre }}</span>
+      <span class="rol" [title]="usuario.rolNombre">{{ usuario.rol }}</span>
+      <button mat-icon-button type="button" (click)="auth.logout()" aria-label="Cerrar sesión" title="Cerrar sesión">
+        <mat-icon>logout</mat-icon>
+      </button>
+    </div>
+  </header>
+  <main class="contenido">
+    <router-outlet />
+  </main>
+} @else {
+  <router-outlet />
+}

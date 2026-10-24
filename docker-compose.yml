@@ -1,0 +1,22 @@
+# Base de datos de desarrollo con el esquema y los datos demo ya cargados:
+#   docker compose up -d
+# Se publica en el puerto 5433 (no en el 5432) para no chocar con un PostgreSQL instalado en el equipo.
+# Otro puerto: SADUAL_DB_PORT=5434 docker compose up -d  (y el mismo en SADUAL_DB_URL del backend)
+# Para empezar de cero (vuelve a ejecutar los scripts): docker compose down -v && docker compose up -d
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: sadual-db
+    environment:
+      POSTGRES_DB: sadual
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "${SADUAL_DB_PORT:-5433}:5432"
+    volumes:
+      - ./database/01_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+      - ./database/02_seed.sql:/docker-entrypoint-initdb.d/02_seed.sql:ro
+      - sadual-datos:/var/lib/postgresql/data
+
+volumes:
+  sadual-datos:

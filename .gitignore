@@ -19,3 +19,6 @@ backend/src/main/resources/application-local.properties
 # Variables de entorno y logs
 .env
 *.log
+
+# Angular (compilación de pruebas)
+frontend/out-tsc/
