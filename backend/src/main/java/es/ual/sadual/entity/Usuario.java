@@ -47,6 +47,10 @@ public class Usuario {
     @Column(name = "fecha_alta", nullable = false, updatable = false)
     private LocalDateTime fechaAlta;
 
+    /** P17: entidad con convenio a la que representa (solo perfil EXTERNO). Se gestiona en el Incremento 2. */
+    @Column(name = "id_entidad")
+    private Integer idEntidad;
+
     protected Usuario() {
     }
 
@@ -73,6 +77,7 @@ public class Usuario {
     public String getPasswordHash() { return passwordHash; }
     public String getTelefono() { return telefono; }
     public LocalDateTime getFechaAlta() { return fechaAlta; }
+    public Integer getIdEntidad() { return idEntidad; }
 
     public boolean isActivo() {
         return Boolean.TRUE.equals(activo);

@@ -8,7 +8,8 @@
 BEGIN;
 
 -- Perfiles. Límites por perfil reservados para el futuro (ver 01_schema.sql).
--- EXTERNO existe pero, por P4, de momento no hace reservas individuales.
+-- EXTERNO (P4/P17): tutores de menores y representantes de entidades con convenio;
+-- no hace reservas individuales de carácter personal.
 INSERT INTO rol (codigo, nombre, max_reservas_semana, antelacion_max_dias) VALUES
   ('ALUMNADO', 'Alumnado',                                  3,  7),
   ('PDI',      'Personal Docente e Investigador',           3,  7),
@@ -58,6 +59,10 @@ SELECT i.id_instalacion, 6, TIME '09:00', TIME '14:00' FROM instalacion i;
 INSERT INTO entidad_convenio (nombre, cif, email_contacto, fecha_inicio) VALUES
   ('Club Deportivo Demo Almería', 'G00000000', 'contacto@clubdemo.test', DATE '2026-09-01');
 
+-- P17: el usuario externo de la demo representa al club con convenio.
+UPDATE usuario SET id_entidad = (SELECT id_entidad FROM entidad_convenio WHERE cif = 'G00000000')
+ WHERE email = 'externo.demo@correo.test';
+
 -- Reservas de ejemplo para la demo (martes 27/10/2026).
 INSERT INTO reserva (id_usuario, id_instalacion, fecha, hora_inicio, hora_fin, estado) VALUES
   ((SELECT id_usuario FROM usuario WHERE email='alumna.demo@ual.es'),
@@ -83,5 +88,13 @@ INSERT INTO bloqueo (id_instalacion, id_creador, inicio, fin, motivo, observacio
    (SELECT id_usuario FROM usuario WHERE email='admin.deportes@ual.es'),
    TIMESTAMP '2026-10-26 08:00', TIMESTAMP '2026-10-26 14:00', 'DOCENCIA',
    'Prácticas del Grado en Ciencias de la Actividad Física y del Deporte');
+
+-- P11: festivo nacional (martes 8/12/2026) → cierre de todas las instalaciones.
+DO $$
+BEGIN
+    PERFORM fn_cerrar_instalaciones(TIMESTAMP '2026-12-08 00:00', TIMESTAMP '2026-12-09 00:00',
+                                    'Festivo: Inmaculada Concepción',
+                                    (SELECT id_usuario FROM usuario WHERE email = 'admin.deportes@ual.es'));
+END $$;
 
 COMMIT;

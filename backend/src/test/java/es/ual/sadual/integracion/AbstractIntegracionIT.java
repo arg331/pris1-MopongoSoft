@@ -49,6 +49,8 @@ public abstract class AbstractIntegracionIT {
     protected static final int INST_PADEL_1 = 1, INST_PADEL_2 = 2, INST_TENIS_1 = 3, INST_TENIS_2 = 4,
             INST_PABELLON = 6, INST_SALA = 9;
     protected static final int RESERVA_ALUMNA_PADEL = 1;
+    /** Bloqueos que crea el seed: docencia del pabellón (1) + festivo del 8/12 en las 9 instalaciones. */
+    protected static final int BLOQUEOS_DEL_SEED = 10;
 
     static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16-alpine")
             .withDatabaseName("sadual")
@@ -89,7 +91,7 @@ public abstract class AbstractIntegracionIT {
     @AfterEach
     void restaurarDatosDelSeed() {
         jdbc.update("DELETE FROM sancion");
-        jdbc.update("DELETE FROM bloqueo WHERE id_bloqueo > 1");
+        jdbc.update("DELETE FROM bloqueo WHERE id_bloqueo > ?", BLOQUEOS_DEL_SEED);
         jdbc.update("DELETE FROM reserva WHERE id_reserva > 4");
         jdbc.update("""
                 UPDATE reserva
