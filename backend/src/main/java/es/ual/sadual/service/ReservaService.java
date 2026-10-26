@@ -27,9 +27,10 @@ import java.util.List;
 /**
  * F04 · Reserva de una franja y F05 · Mis reservas y cancelación.
  * <p>
- * Reglas (docs/requisitos-cliente.md):
+ * Reglas validadas por el cliente el 25/10/2026 (docs/requisitos-cliente.md):
  * <ul>
- *   <li>P4 · solo los perfiles permitidos hacen reservas individuales.</li>
+ *   <li>P4/P17 · solo la comunidad universitaria hace reservas individuales; los externos
+ *       (tutores y representantes de entidades) no.</li>
  *   <li>P2 · al menos 3 horas de antelación, sin máximo.</li>
  *   <li>P3 · quien tiene una sanción vigente no puede reservar.</li>
  *   <li>P1 · una sola reserva activa por usuario y día.</li>
@@ -74,7 +75,7 @@ public class ReservaService {
                 .orElseThrow(() -> new AccesoDenegadoException("USUARIO_NO_VALIDO", "Tu usuario no puede reservar"));
         if (!politica.puedeReservar(usuario.getRol().getCodigo())) {
             throw new AccesoDenegadoException("PERFIL_NO_AUTORIZADO",
-                    "De momento las reservas individuales son solo para la comunidad universitaria");
+                    "Las reservas individuales son solo para la comunidad universitaria");
         }
         Instalacion instalacion = instalacionService.activa(peticion.idInstalacion());
         LocalDateTime ahora = LocalDateTime.now(reloj);

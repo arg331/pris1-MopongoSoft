@@ -235,6 +235,14 @@ class ReservaIT extends AbstractIntegracionIT {
         }
 
         @Test
+        void P11_no_se_puede_reservar_en_un_festivo() throws Exception {
+            reservar(ALUMNA, INST_TENIS_1, "2026-12-08", "10:00")
+                    .andExpect(status().isConflict())
+                    .andExpect(jsonPath("$.codigo").value("FRANJA_BLOQUEADA"))
+                    .andExpect(jsonPath("$.detail", containsString("CIERRE")));
+        }
+
+        @Test
         void P7_un_bloqueo_del_administrador_cancela_las_reservas_que_pisa() throws Exception {
             jdbc.update("INSERT INTO bloqueo (id_instalacion, id_creador, inicio, fin, motivo) "
                     + "VALUES (?, 1, TIMESTAMP '2026-10-27 09:00', TIMESTAMP '2026-10-27 12:00', 'MANTENIMIENTO')",

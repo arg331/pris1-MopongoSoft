@@ -69,7 +69,7 @@ Respuestas `application/problem+json` con un `codigo` estable para el frontend:
 
 ## Reglas de negocio
 
-Detalle y estado en [`../docs/requisitos-cliente.md`](../docs/requisitos-cliente.md) (**propuesta del equipo pendiente de validar por el cliente**).
+Detalle en [`../docs/requisitos-cliente.md`](../docs/requisitos-cliente.md) (**validadas por el cliente el 25/10/2026**).
 
 | Regla | Dónde se garantiza |
 |---|---|
@@ -77,8 +77,10 @@ Detalle y estado en [`../docs/requisitos-cliente.md`](../docs/requisitos-cliente
 | P1 · una reserva activa por usuario y día | `ReservaService` + índice único parcial `uq_reserva_usuario_dia` |
 | P2 · al menos 3 horas de antelación, sin máximo | `ReservaService` (`sadual.reservas.antelacion-minima`) |
 | P3 · sin reservas el resto de la semana tras no presentarse | trigger `tg_sancionar_no_presentado` + `ReservaService` |
-| P4 · reservas individuales solo para la comunidad universitaria | `PoliticaReservas` (`sadual.reservas.perfiles-permitidos`) |
+| P4/P17 · reservas individuales solo para la comunidad universitaria (los externos son tutores o representantes) | `PoliticaReservas` (`sadual.reservas.perfiles-permitidos`) |
 | P7 · el bloqueo del administrador cancela las reservas que pisa | trigger `tg_bloqueo_cancela_reservas` |
+| P11 · festivos y cierres = bloqueos `CIERRE` en todas las instalaciones | función `fn_cerrar_instalaciones` (en el seed: 8/12/2026) |
+| P17 · solo un EXTERNO puede representar a una entidad con convenio | columna `usuario.id_entidad` + trigger `tg_validar_representante` |
 | P10 · cero dobles reservas | `ReservaService` + restricción `ex_reserva_sin_solape` |
 
 Criterio: las reglas que dependen de "ahora" (P2, P3) se comprueban en el backend con el reloj inyectable; las de integridad (P1, P10) las garantiza además la base de datos, la única capaz de resolver peticiones simultáneas.

@@ -4,7 +4,8 @@
 -- ---------------------------------------------------------------------
 --  MopongoSoft S.L. (PRIS1 · Grupo 07 · Variación 7)
 --  SGBD objetivo : PostgreSQL 15 o superior
---  Versión       : 1.0 (Release V1 · Hito 1, 26/10/2026)
+--  Versión       : 1.1 (Release V1 · Hito 1, 26/10/2026)
+--  Reglas        : validadas por el cliente el 25/10/2026 (docs/requisitos-cliente.md)
 --  Responsable BD: Javier Zúñiga Carmona
 --
 --  Ejecución:
@@ -37,8 +38,9 @@ DROP TABLE IF EXISTS inscripcion_escuela, menor, escuela,
 -- ---------------------------------------------------------------------
 
 -- Perfiles de acceso (RBAC). max_reservas_semana y antelacion_max_dias quedan
--- como parámetros por perfil para el futuro: con P1/P2 el límite vigente es
--- 1 reserva al día (uq_reserva_usuario_dia) y sin antelación máxima.
+-- como parámetros por perfil para el futuro: con P1/P2 (validadas por el cliente
+-- el 25/10/2026) el límite vigente es 1 reserva al día (uq_reserva_usuario_dia)
+-- y sin antelación máxima. ADMIN incluye las tareas de Recepción (P15).
 CREATE TABLE rol (
     id_rol               SMALLINT    GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     codigo               VARCHAR(20) NOT NULL UNIQUE,
@@ -46,6 +48,21 @@ CREATE TABLE rol (
     max_reservas_semana  SMALLINT    NOT NULL DEFAULT 3  CHECK (max_reservas_semana >= 0),
     antelacion_max_dias  SMALLINT    NOT NULL DEFAULT 7  CHECK (antelacion_max_dias  >= 0),
     CONSTRAINT ck_rol_codigo CHECK (codigo IN ('ALUMNADO','PDI','PAS','EXTERNO','ADMIN'))
+);
+
+-- Entidades con convenio. Se crea en V1 porque Usuario y Reserva la referencian
+-- (representantes y reservas institucionales); su gestión funcional llega en el
+-- Incremento 2. Va antes de usuario por la clave foránea usuario.id_entidad.
+CREATE TABLE entidad_convenio (
+    id_entidad      INTEGER      GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nombre          VARCHAR(120) NOT NULL,
+    cif             VARCHAR(9)   NOT NULL UNIQUE,
+    email_contacto  VARCHAR(120),
+    telefono        VARCHAR(20),
+    fecha_inicio    DATE         NOT NULL,
+    fecha_fin       DATE,
+    activa          BOOLEAN      NOT NULL DEFAULT TRUE,
+    CONSTRAINT ck_convenio_fechas CHECK (fecha_fin IS NULL OR fecha_fin >= fecha_inicio)
 );
 
 CREATE TABLE usuario (
@@ -58,6 +75,9 @@ CREATE TABLE usuario (
     telefono       VARCHAR(20),
     activo         BOOLEAN      NOT NULL DEFAULT TRUE,
     fecha_alta     TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    -- P17: un usuario EXTERNO puede representar a una entidad con convenio
+    -- (lo garantiza tg_validar_representante). Los tutores no la necesitan.
+    id_entidad     INTEGER      REFERENCES entidad_convenio (id_entidad),
     CONSTRAINT ck_usuario_email CHECK (email ~* '^[^@\s]+@[^@\s]+\.[^@\s]+$')
 );
 
@@ -90,20 +110,6 @@ CREATE TABLE horario_instalacion (
     hora_cierre     TIME     NOT NULL,
     CONSTRAINT ck_horario_rango CHECK (hora_cierre > hora_apertura),
     CONSTRAINT uq_horario UNIQUE (id_instalacion, dia_semana, hora_apertura)
-);
-
--- Entidades con convenio. Se crea en V1 porque Reserva la referencia
--- (reserva institucional); su gestión funcional llega en el Incremento 2.
-CREATE TABLE entidad_convenio (
-    id_entidad      INTEGER      GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    nombre          VARCHAR(120) NOT NULL,
-    cif             VARCHAR(9)   NOT NULL UNIQUE,
-    email_contacto  VARCHAR(120),
-    telefono        VARCHAR(20),
-    fecha_inicio    DATE         NOT NULL,
-    fecha_fin       DATE,
-    activa          BOOLEAN      NOT NULL DEFAULT TRUE,
-    CONSTRAINT ck_convenio_fechas CHECK (fecha_fin IS NULL OR fecha_fin >= fecha_inicio)
 );
 
 CREATE TABLE reserva (
@@ -157,7 +163,8 @@ CREATE TABLE evento (
     CONSTRAINT ck_evento_estado CHECK (estado IN ('PLANIFICADO','PUBLICADO','CANCELADO','FINALIZADO'))
 );
 
--- Bloqueo de una instalación (docencia, mantenimiento, evento...).
+-- Bloqueo de una instalación (docencia, mantenimiento, evento, cierre...).
+-- P7: solo lo crea la administración y tiene prioridad sobre las reservas.
 -- Se usa ya en V1 para que la consulta de disponibilidad sea real.
 CREATE TABLE bloqueo (
     id_bloqueo      INTEGER      GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -169,8 +176,9 @@ CREATE TABLE bloqueo (
     motivo          VARCHAR(15)  NOT NULL,
     observaciones   VARCHAR(255),
     CONSTRAINT ck_bloqueo_fechas CHECK (fin > inicio),
+    -- CIERRE (P11): festivos, periodos vacacionales y cierres extraordinarios.
     CONSTRAINT ck_bloqueo_motivo CHECK (motivo IN
-        ('DOCENCIA','MANTENIMIENTO','EVENTO','COMPETICION','OTRO')),
+        ('DOCENCIA','MANTENIMIENTO','EVENTO','COMPETICION','CIERRE','OTRO')),
     CONSTRAINT ck_bloqueo_evento CHECK ((motivo = 'EVENTO') = (id_evento IS NOT NULL)),
     CONSTRAINT ex_bloqueo_sin_solape EXCLUDE USING gist (
         id_instalacion WITH =, tsrange(inicio, fin) WITH &&)
@@ -213,8 +221,8 @@ CREATE TABLE inscripcion_escuela (
     PRIMARY KEY (id_escuela, id_menor)
 );
 
--- P3: quien no se presenta a una reserva confirmada no puede reservar el resto
--- de esa semana. La sanción la crea el trigger tg_sancionar_no_presentado.
+-- P3 (validada 25/10/2026): quien no se presenta a una reserva confirmada no puede
+-- hacer reservas nuevas el resto de esa semana. La sanción la crea el trigger tg_sancionar_no_presentado.
 CREATE TABLE sancion (
     id_sancion    INTEGER      GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     id_usuario    INTEGER      NOT NULL REFERENCES usuario (id_usuario),
@@ -300,6 +308,23 @@ CREATE TRIGGER tg_bloqueo_cancela_reservas
     AFTER INSERT OR UPDATE OF inicio, fin, id_instalacion ON bloqueo
     FOR EACH ROW EXECUTE FUNCTION fn_bloqueo_cancela_reservas();
 
+-- R-06 (P17). Solo un usuario EXTERNO puede estar vinculado a una entidad con
+--       convenio (representante). Tutores y comunidad UAL no tienen entidad.
+CREATE OR REPLACE FUNCTION fn_validar_representante() RETURNS trigger AS $$
+BEGIN
+    IF NEW.id_entidad IS NOT NULL AND
+       (SELECT codigo FROM rol WHERE id_rol = NEW.id_rol) <> 'EXTERNO' THEN
+        RAISE EXCEPTION 'Solo un usuario externo puede representar a una entidad con convenio'
+              USING ERRCODE = 'P0006';
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER tg_validar_representante
+    BEFORE INSERT OR UPDATE OF id_entidad, id_rol ON usuario
+    FOR EACH ROW EXECUTE FUNCTION fn_validar_representante();
+
 -- R-02. Control de aforo de eventos masivos (Variación 7).
 CREATE OR REPLACE FUNCTION fn_aforo_evento() RETURNS trigger AS $$
 BEGIN
@@ -376,6 +401,29 @@ RETURNS TABLE (hora_inicio TIME, hora_fin TIME, disponible BOOLEAN) AS $$
       AND i.activa
     ORDER BY 1;
 $$ LANGUAGE sql STABLE;
+
+-- P11: cierre de TODAS las instalaciones activas (festivo, vacaciones, cierre
+-- extraordinario). Crea un bloqueo CIERRE por instalación; las reservas afectadas
+-- se cancelan (tg_bloqueo_cancela_reservas, P7). Las instalaciones que ya tienen un
+-- bloqueo solapado en ese periodo se omiten (siguen bloqueadas por el existente).
+-- Uso: SELECT fn_cerrar_instalaciones(TIMESTAMP '2026-12-08 00:00', TIMESTAMP '2026-12-09 00:00',
+--                                      'Festivo: Inmaculada Concepción', 1);
+CREATE OR REPLACE FUNCTION fn_cerrar_instalaciones(p_inicio TIMESTAMP, p_fin TIMESTAMP,
+                                                   p_observaciones VARCHAR, p_id_creador INTEGER)
+RETURNS INTEGER AS $$
+DECLARE v_creados INTEGER;
+BEGIN
+    INSERT INTO bloqueo (id_instalacion, id_creador, inicio, fin, motivo, observaciones)
+    SELECT i.id_instalacion, p_id_creador, p_inicio, p_fin, 'CIERRE', p_observaciones
+      FROM instalacion i
+     WHERE i.activa
+       AND NOT EXISTS (SELECT 1 FROM bloqueo b
+                        WHERE b.id_instalacion = i.id_instalacion
+                          AND tsrange(b.inicio, b.fin) && tsrange(p_inicio, p_fin));
+    GET DIAGNOSTICS v_creados = ROW_COUNT;
+    RETURN v_creados;
+END;
+$$ LANGUAGE plpgsql;
 
 -- Listado de reservas con datos legibles (pantalla "Mis reservas" y panel admin).
 CREATE OR REPLACE VIEW v_reservas_detalle AS

@@ -91,6 +91,17 @@ class CatalogoDisponibilidadIT extends AbstractIntegracionIT {
     }
 
     @Test
+    void P11_un_festivo_aparece_cerrado_en_todas_las_franjas() throws Exception {
+        // Seed: cierre de todas las instalaciones el martes 8/12/2026 (Inmaculada Concepción)
+        mvc.perform(get("/api/instalaciones/{id}/disponibilidad", INST_TENIS_1).param("fecha", "2026-12-08")
+                        .header("Authorization", auth()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.franjas", hasSize(14)))
+                .andExpect(jsonPath("$.franjas[*].estado", everyItem(is("BLOQUEADA"))))
+                .andExpect(jsonPath("$.franjas[*].motivo", everyItem(is("CIERRE"))));
+    }
+
+    @Test
     void el_sabado_solo_hay_horario_de_mañana_y_el_domingo_esta_cerrado() throws Exception {
         mvc.perform(get("/api/instalaciones/{id}/disponibilidad", INST_TENIS_1).param("fecha", "2026-10-31")
                         .header("Authorization", auth()))

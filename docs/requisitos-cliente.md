@@ -1,31 +1,61 @@
-# Preguntas al cliente y decisiones de requisitos
+# Requisitos validados por el cliente (P1–P22)
 
-Registro de las preguntas P1–P10 planteadas al Servicio de Deportes (G2, apartado 2) y de cómo se
-han resuelto.
+Registro de las preguntas planteadas al Servicio de Deportes y de su resolución.
 
-> **Estado: PROPUESTA DEL EQUIPO, PENDIENTE DE VALIDAR POR EL CLIENTE.**
-> La profesora (cliente) todavía no ha respondido. Estas respuestas son la propuesta de MopongoSoft
-> y se han enviado al cliente para su validación el __/__/2026. Cuando conteste, se actualiza la columna
-> "Validado" y, si algo cambia, se ajusta la configuración indicada (la mayoría de reglas son parámetros).
+> **Estado: VALIDADO POR EL CLIENTE el 25/10/2026.**
+> El equipo envió sus propuestas el 24/10/2026 ([`cliente/2026-10-24_propuestas_requisitos_P1-P22.docx`](cliente/2026-10-24_propuestas_requisitos_P1-P22.docx)).
+> El cliente (profesora) respondió el 25/10/2026 ([`cliente/2026-10-25_respuesta_cliente_requisitos.pdf`](cliente/2026-10-25_respuesta_cliente_requisitos.pdf)):
+> *"Tras revisar las propuestas planteadas, se consideran aceptadas por el cliente para esta fase del proyecto.
+> Podéis utilizarlas como reglas de negocio válidas […]"*. Además detalló P11, P12, P13 y P17.
+> Cualquier modificación posterior se tratará como cambio de requisitos (procedimiento de gestión del alcance, riesgo R2).
 
-| # | Pregunta | Respuesta propuesta | Origen | Validado | Dónde se aplica |
-|---|---|---|---|---|---|
-| P1 | Reservas simultáneas por usuario | **Una reserva activa por día** y usuario. Las reservas institucionales (Variación 7) no cuentan. | Equipo | ☐ | Índice `uq_reserva_usuario_dia` (BD) y `ReservaService` → `409 LIMITE_DIARIO` |
-| P2 | Antelación máxima y mínima | **Sin máximo** (mientras la franja esté libre); **mínimo 3 horas**. | Equipo | ☐ | `sadual.reservas.antelacion-minima=PT3H`; franjas `FUERA_DE_PLAZO` en F03; `422 ANTELACION_MINIMA` |
-| P3 | Penalización por no presentarse | **Sí: no puede reservar el resto de esa semana.** El administrador marca la reserva como *no presentado* y se crea la sanción desde ese día hasta el domingo. | Equipo | ☐ | Trigger `tg_sancionar_no_presentado`; `PATCH /api/admin/reservas/{id}/no-presentado`; `403 USUARIO_SANCIONADO` |
-| P4 | ¿Pueden reservar externos? | **De momento solo la comunidad universitaria** (Alumnado, PDI, PAS). El perfil EXTERNO se mantiene para abrirlo más adelante y para las reservas institucionales del Incremento 2. | Equipo | ☐ | `sadual.reservas.perfiles-permitidos`; `403 PERFIL_NO_AUTORIZADO`; aviso en la pantalla |
-| P5 | Lista de espera | **No en esta versión**: se valora como cambio en el Incremento 3 (coherente con G2). | Equipo | ☐ | Fuera de alcance |
-| P6 | Pago o tarifa | **Sí, en una fase posterior.** El sistema no procesa pagos (G2: fuera de alcance); como mucho reflejará el estado del cobro. | Equipo | ☐ | Fuera de alcance de V1 |
-| P7 | Quién bloquea y prioridad | **Solo el perfil administrador**, por docencia, mantenimiento, competición o evento. **El bloqueo tiene prioridad**: las reservas que pisa quedan canceladas. | Equipo | ☐ | Trigger `tg_bloqueo_cancela_reservas`; rutas `/api/admin/**` solo ADMIN |
-| P8 | Datos de usuario y autenticación | **Email y contraseña** en V1 (datos mínimos: nombre, apellidos, email, teléfono opcional y perfil). Autenticación desacoplada para conectar el acceso institucional de la UAL cuando lo permita el Equipo TIC (riesgo R4). | Equipo | ☐ | `TokenService` / `AuthService` |
-| P9 | Informes de ocupación | **Todos los que sean viables** → se concretan en el Incremento 3. Propuesta inicial: ocupación por instalación y franja, uso por perfil, cancelaciones y no presentados; consulta semanal y mensual. | Equipo | ☐ | Incremento 3 (vista `v_reservas_detalle` como base) |
-| P10 | Dos usuarios reservan la misma franja a la vez | **Solo una reserva gana**; la otra persona recibe un aviso de que la franja acaba de ocuparse. | Equipo | ☐ | Restricción `ex_reserva_sin_solape` (BD) → `409 FRANJA_OCUPADA`; prueba de concurrencia |
+Leyenda del estado: ✅ implementado en la Release V1 · 🟡 parcial · ⏳ planificado (incremento indicado) · ⛔ fuera de alcance.
 
-## Interpretaciones que conviene confirmar expresamente
+## A. Preguntas de la G2 (P1–P10)
 
-- **P3 · "esa semana"**: se ha interpretado como *desde el día de la reserva incumplida hasta el
-  domingo de esa semana*; durante ese tiempo el usuario no puede hacer reservas nuevas (para
-  ninguna fecha). Las reservas que ya tuviera se mantienen.
-- **P7 · prioridad**: al crear un bloqueo se cancelan automáticamente las reservas afectadas. Como no
-  hay notificaciones en V1, el usuario lo ve en "Mis reservas" como *Cancelada*.
-- **P1 · administrador**: el límite de una reserva al día se aplica también al perfil ADMIN.
+| # | Pregunta | Decisión validada | Estado |
+|---|---|---|---|
+| P1 | Reservas por usuario | **Una reserva activa por día** y usuario, también para el perfil de administración. Las reservas institucionales no cuentan. | ✅ |
+| P2 | Antelación | **Mínimo 3 horas**, sin máximo mientras la franja esté libre. | ✅ |
+| P3 | Penalización por no presentarse | La administración marca la reserva como *no presentado* y el usuario **no puede hacer reservas nuevas desde ese día hasta el domingo**. Sus reservas existentes se mantienen. | ✅ |
+| P4 | Usuarios externos | **Solo la comunidad universitaria** (alumnado, PDI, PAS) hace reservas individuales. Ver P17. | ✅ |
+| P5 | Lista de espera | No en esta versión; se valorará en el Incremento 3. | ⛔ V1 |
+| P6 | Pago | Fase posterior. El sistema no procesa pagos; como mucho reflejará si una reserva está pagada. | ⛔ V1 |
+| P7 | Bloqueos | Solo la administración. **El bloqueo tiene prioridad**: las reservas afectadas se cancelan y el usuario lo ve en "Mis reservas" (sin notificaciones en V1). | ✅ regla en BD · ⏳ pantalla (F08) |
+| P8 | Datos y autenticación | Email y contraseña (nombre, apellidos, email, teléfono opcional, perfil). Autenticación desacoplada para conectar el acceso institucional de la UAL (R4). | ✅ |
+| P9 | Informes | Incremento 3: ocupación por instalación y franja, uso por perfil, cancelaciones y no presentados; consulta semanal y mensual. | ⏳ Inc. 3 |
+| P10 | Concurrencia | Solo una reserva se confirma; la otra persona recibe "la franja ya está reservada". | ✅ |
+
+## B. Núcleo del sistema (P11–P16)
+
+| # | Pregunta | Decisión validada | Estado |
+|---|---|---|---|
+| P11 | Horario de apertura | L–V 08:00–22:00, sábados 09:00–14:00, domingos cerrado. **Festivos, vacaciones y cierres extraordinarios se gestionan con bloqueos configurables por la administración** (motivo `CIERRE`). | ✅ horario y cierres en BD (`fn_cerrar_instalaciones`, festivo 8/12 en el seed) · ⏳ pantalla (F08) |
+| P12 | Duración de las franjas | Pádel 90 min, resto 60 min. **Debe ser configurable por instalación desde el panel de administración.** | ✅ valores y columna `duracion_franja_min` · ⏳ pantalla (F06) |
+| P13 | Instalación completa o por plazas | Se reserva la **unidad completa** (pista, calle de piscina, sala…). | ✅ |
+| P14 | Cancelación | Hasta que empieza la reserva, sin penalización. | ✅ |
+| P15 | Administración / Recepción | Un único perfil de administración que incluye Recepción. | ✅ |
+| P16 | Altas de usuarios | La comunidad universitaria la da de alta la administración (sin autorregistro). *Excepción: ver P17.* | ✅ (usuarios del seed) · ⏳ pantalla (F07) |
+
+## C. Variación 7 · Incremento 2 (P17–P22)
+
+| # | Pregunta | Decisión validada | Estado |
+|---|---|---|---|
+| P17 | Tutores y representantes externos | Los **tutores legales** podrán **registrarse** como usuarios externos para inscribir menores en las escuelas. Los **representantes** podrán registrarse como usuarios externos **vinculados a una entidad con convenio**. Ninguno de los dos hace reservas deportivas individuales de carácter personal. | ✅ sin reservas individuales · ✅ vínculo `usuario.id_entidad` en BD · ⏳ registro (Inc. 2) |
+| P18 | Eventos masivos | Los organiza solo la administración; pueden ocupar varias instalaciones; si se cancelan, se anulan las inscripciones. | ⏳ Inc. 2 |
+| P19 | Horario de las escuelas | Horario semanal fijo que bloquea la instalación durante la temporada. | ⏳ Inc. 2 |
+| P20 | Edad de los menores | A la fecha de inscripción. | ✅ en BD (`tg_validar_inscripcion_escuela`) |
+| P21 | Reservas institucionales | Las autoriza la administración (plazo por definir); no cuentan para el límite diario. | 🟡 límite diario ✅ · flujo de autorización ⏳ Inc. 2 |
+| P22 | Datos de menores (RGPD) | Registrar el consentimiento del tutor y su fecha. | ⏳ Inc. 2 (añadir al modelo) |
+
+## Interpretaciones del equipo (sin consulta adicional, según indica el cliente)
+
+- **P16 y P17.** Solo pueden registrarse por su cuenta los usuarios externos (tutores y representantes).
+  Los miembros de la comunidad UAL los da de alta la administración.
+- **P17 · representante.** Solo un usuario con perfil EXTERNO puede estar vinculado a una entidad
+  (lo garantiza el trigger `tg_validar_representante`). Un tutor no necesita entidad.
+- **P11 · cierre general.** Un cierre crea un bloqueo `CIERRE` en cada instalación activa. Las que ya
+  tienen un bloqueo en ese periodo se omiten (siguen bloqueadas por el existente). Por P7, el cierre
+  cancela las reservas que coincidan.
+- **P12 · cambio de duración.** Cambiar la duración de franja no altera las reservas ya hechas, que
+  conservan su hora de inicio y fin (a tener en cuenta al construir F06).

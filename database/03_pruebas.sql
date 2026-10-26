@@ -2,7 +2,7 @@
 --  SAD-UAL · Pruebas de verificación del modelo de datos
 --  MopongoSoft S.L. · PRIS1 Grupo 07
 --  Ejecutar tras 01_schema.sql y 02_seed.sql. No deja datos residuales.
---  Cada prueba (T1–T13) muestra OK o FALLO mediante NOTICE.
+--  Cada prueba (T1–T16) muestra OK o FALLO mediante NOTICE.
 --  Ojo: T = prueba; P1–P10 son las preguntas al cliente (G2).
 -- =====================================================================
 
@@ -129,6 +129,42 @@ BEGIN
     END IF;
     RAISE EXCEPTION 'rollback';
 EXCEPTION WHEN raise_exception THEN NULL;
+END $$;
+
+-- T14. P11: el festivo del seed cierra todas las instalaciones y no se puede reservar
+DO $$
+BEGIN
+    INSERT INTO reserva (id_usuario, id_instalacion, fecha, hora_inicio, hora_fin)
+    VALUES (2, 3, DATE '2026-12-08', TIME '10:00', TIME '11:00');
+    RAISE NOTICE 'T14 FALLO: se ha reservado en un festivo';
+EXCEPTION WHEN SQLSTATE 'P0001' THEN
+    RAISE NOTICE 'T14 OK: festivo cerrado en % instalaciones; reserva rechazada',
+        (SELECT count(*) FROM bloqueo WHERE motivo = 'CIERRE' AND inicio = TIMESTAMP '2026-12-08 00:00');
+END $$;
+
+-- T15. P11: un cierre cancela las reservas existentes y omite instalaciones ya bloqueadas
+DO $$
+DECLARE v_creados INTEGER; v_estado VARCHAR;
+BEGIN
+    v_creados := fn_cerrar_instalaciones(TIMESTAMP '2026-10-26 00:00', TIMESTAMP '2026-10-28 00:00',
+                                         'Cierre extraordinario de prueba', 1);
+    SELECT estado INTO v_estado FROM reserva WHERE id_reserva = 1;     -- pádel 1, 27/10
+    IF v_creados = 8 AND v_estado = 'CANCELADA' THEN                  -- 9 activas - pabellón (docencia)
+        RAISE NOTICE 'T15 OK: % cierres creados, la reserva afectada queda cancelada', v_creados;
+    ELSE
+        RAISE NOTICE 'T15 FALLO: % cierres, reserva %', v_creados, v_estado;
+    END IF;
+    RAISE EXCEPTION 'rollback';
+EXCEPTION WHEN raise_exception THEN NULL;
+END $$;
+
+-- T16. P17: solo un usuario EXTERNO puede representar a una entidad con convenio
+DO $$
+BEGIN
+    UPDATE usuario SET id_entidad = 1 WHERE email = 'alumna.demo@ual.es';
+    RAISE NOTICE 'T16 FALLO: una alumna representa a una entidad';
+EXCEPTION WHEN SQLSTATE 'P0006' THEN
+    RAISE NOTICE 'T16 OK: %', SQLERRM;
 END $$;
 
 -- T8. Consulta de disponibilidad (funcionalidad Must de la V1)

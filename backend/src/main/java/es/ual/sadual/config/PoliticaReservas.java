@@ -7,10 +7,11 @@ import java.time.Duration;
 import java.util.Set;
 
 /**
- * Reglas de reserva configurables (ver docs/requisitos-cliente.md).
+ * Reglas de reserva configurables, validadas por el cliente el 25/10/2026 (docs/requisitos-cliente.md).
  * <ul>
- *   <li>P4: perfiles que pueden hacer reservas individuales. EXTERNO queda fuera de momento,
- *       pero basta con añadirlo a sadual.reservas.perfiles-permitidos para habilitarlo.</li>
+ *   <li>P4/P17: perfiles que pueden hacer reservas individuales. EXTERNO (tutores y
+ *       representantes de entidades) no las hace: usa el sistema para escuelas y reservas
+ *       institucionales (Incremento 2).</li>
  *   <li>P2: antelación mínima para reservar (sin máximo).</li>
  * </ul>
  * La regla P1 (una reserva por día) la garantiza además el índice uq_reserva_usuario_dia.

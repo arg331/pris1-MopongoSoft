@@ -9,7 +9,7 @@ export interface Usuario {
   email: string;
   rol: CodigoRol;
   rolNombre: string;
-  /** P4: de momento solo la comunidad universitaria hace reservas individuales. */
+  /** P4/P17: solo la comunidad universitaria hace reservas individuales (los externos no). */
   puedeReservar: boolean;
 }
 

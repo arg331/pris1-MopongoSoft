@@ -24,10 +24,12 @@ y reservarla sin riesgo de doble reserva, y consultar y cancelar sus reservas.
 
 Priorización completa y criterios de aceptación en [`docs/funcionalidades-v1.md`](docs/funcionalidades-v1.md).
 
-Reglas de reserva aplicadas (detalle y estado en [`docs/requisitos-cliente.md`](docs/requisitos-cliente.md)):
-una reserva por día (P1), al menos 3 horas de antelación (P2), sin reservar el resto de la semana tras no
-presentarse (P3), reservas individuales solo para la comunidad universitaria (P4), los bloqueos del
-administrador tienen prioridad (P7) y cero dobles reservas (P10). **Pendientes de validar por el cliente.**
+**Reglas de negocio validadas por el cliente el 25/10/2026** (detalle en [`docs/requisitos-cliente.md`](docs/requisitos-cliente.md),
+evidencia en [`docs/cliente/`](docs/cliente/)): una reserva por día (P1), al menos 3 horas de antelación (P2), sin
+reservas nuevas hasta el domingo tras no presentarse (P3), reservas individuales solo para la comunidad
+universitaria (P4/P17), los bloqueos de la administración tienen prioridad (P7), cero dobles reservas (P10),
+horario L–V 8–22 y sábados 9–14 con festivos como cierres (P11), franjas de 90 min en pádel y 60 en el resto
+(P12) y reserva de la unidad completa (P13).
 
 | ID | Funcionalidad | MoSCoW | Estado |
 |---|---|---|---|
@@ -36,14 +38,14 @@ administrador tienen prioridad (P7) y cero dobles reservas (P10). **Pendientes d
 | F03 | Consulta de disponibilidad | Must | ✅ Implementada (backend + pantalla) |
 | F04 | Reserva de una franja (cero dobles reservas) | Must | ✅ Implementada (backend + pantalla) |
 | F05 | Mis reservas y cancelación | Must | ✅ Implementada (backend + pantalla) |
-| F06 | Panel admin de instalaciones | Should | Pendiente |
-| F07 | Gestión básica de usuarios | Should | Pendiente |
-| F08 | Bloqueo de franjas | Should | Modelo de datos listo; bloqueos visibles en F03 |
+| F06 | Panel admin de instalaciones (duración de franja configurable, P12) | Should | Sprint 2 · modelo de datos listo |
+| F07 | Gestión básica de usuarios | Should | Sprint 2 |
+| F08 | Bloqueo de franjas y cierres por festivos (P7, P11) | Should | Reglas en BD ✅ y visibles en F03 · pantalla en Sprint 2 |
 | F09 | Límites por perfil | Could | Columnas preparadas en `rol`; el límite común (P1) ya se aplica |
 | F10 | Consulta general de reservas | Could | Vista `v_reservas_detalle` lista |
 | F11 | Experiencia móvil optimizada | Could | Pantallas F01–F05 adaptadas a móvil |
 | F12 | Sanción por no presentarse (P3) | Could | ✅ BD + endpoint de administración |
-| — | Variación 7 (eventos, escuelas, reservas institucionales) | Won't (V1) | Incremento 2 · tablas ya creadas |
+| — | Variación 7 (eventos, escuelas, reservas institucionales, registro de tutores y representantes P17) | Won't (V1) | Incremento 2 · modelo de datos ya preparado |
 
 ## Tecnologías
 
@@ -66,13 +68,15 @@ grupo-07/                      (organización GitHub pris1)
 ├── database/
 │   ├── 01_schema.sql          → Esquema completo (14 tablas, triggers, funciones y vistas)
 │   ├── 02_seed.sql            → Datos de demostración para el Hito 1
-│   └── 03_pruebas.sql         → Pruebas del modelo de datos (T1–T13)
+│   └── 03_pruebas.sql         → Pruebas del modelo de datos (T1–T16)
 └── docs/
-    ├── funcionalidades-v1.md  → Priorización MoSCoW y criterios de aceptación
-    ├── requisitos-cliente.md  → Preguntas P1–P10 y decisiones (pendientes de validar)
+    ├── funcionalidades-v1.md  → Priorización MoSCoW, criterios de aceptación y estado
+    ├── requisitos-cliente.md  → Preguntas P1–P22 y decisiones validadas por el cliente
+    ├── cliente/               → Propuesta enviada (24/10) y respuesta del cliente (25/10)
     └── modelo-datos/
-        ├── MER.png            → Modelo Entidad-Relación
-        └── ModeloRelacional.png → Modelo relacional (PostgreSQL)
+        ├── MER.png / MER.pdf                       → Modelo Entidad-Relación
+        ├── ModeloRelacional.png / ModeloRelacional.pdf → Modelo relacional (PostgreSQL)
+        └── fuentes/           → Archivos originales (.dot) y script que los genera (Graphviz)
 ```
 
 ## Puesta en marcha (entorno de desarrollo)
@@ -111,10 +115,27 @@ entrar y consultar, pero no reservar (P4).
 
 | Qué | Comando | Necesita |
 |---|---|---|
-| Modelo de datos (T1–T13) | `psql -d sadual -f database/03_pruebas.sql` | BD creada |
+| Modelo de datos (T1–T16) | `psql -d sadual -f database/03_pruebas.sql` | BD creada |
 | Backend · unitarias | `cd backend && mvn test` | — |
 | Backend · integración (incluye pruebas de reservas simultáneas) | `cd backend && mvn verify` | Docker |
 | Frontend | `cd frontend && npm test` | — |
+
+## Guion de la demo del Hito 1
+
+Con los tres servicios arrancados, en `http://localhost:4200`:
+
+1. **Login (F01).** Atajo *Alumnado* → entra Lucía, perfil ALUMNADO.
+2. **Catálogo (F02).** Filtrar por *Pádel* → Pistas de pádel 1 y 2.
+3. **Disponibilidad (F03).** *Pista de pádel 1*, martes **27/10**: franjas de 90 min (P12), la de 09:30 aparece *Ocupada*.
+4. **Reservar (F04).** La alumna ya tiene la de las 09:30, así que elegir otro día, por ejemplo **28/10** a las 11:00 → *Reserva confirmada*.
+   Intentar otra el mismo 28/10 en tenis → *"Ya tienes una reserva ese día"* (P1).
+5. **Bloqueos y cierres.** *Pabellón cubierto* el **26/10** por la mañana → *Bloqueada · docencia* (P7).
+   Cualquier instalación el **8/12** → todo *Cerrado* por festivo (P11).
+6. **Mis reservas (F05).** Cancelar la reserva del 28/10 → la franja vuelve a estar libre al instante.
+7. **Perfiles (P4/P17).** Cerrar sesión y entrar con *Externo* → puede consultar, pero no reservar.
+8. **Cero dobles reservas (P10).** Mostrar `ConcurrenciaReservaIT`: 10 peticiones simultáneas → 1 × 201 y 9 × 409.
+
+> Ojo con la hora: el día de la demo, las franjas que empiezan en menos de 3 horas salen *Fuera de plazo* (P2).
 
 ## Flujo de trabajo
 
@@ -125,5 +146,6 @@ entrar y consultar, pero no reservar (P4).
 
 ## Documentación
 
-El modelo de datos (MER y modelo relacional) está en `docs/modelo-datos/`. El resto de la
-documentación del curso (G1–G4) se irá añadiendo a `docs/`.
+El modelo de datos (MER y modelo relacional) está en `docs/modelo-datos/`. Para regenerar los diagramas
+tras cambiar el esquema: `python3 docs/modelo-datos/fuentes/generar_diagramas.py` (requiere Graphviz).
+El resto de la documentación del curso (G1–G4) se irá añadiendo a `docs/`.
