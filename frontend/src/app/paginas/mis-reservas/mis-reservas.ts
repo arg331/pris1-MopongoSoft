@@ -15,6 +15,7 @@ const ETIQUETA_ESTADO: Record<EstadoReserva, string> = {
   CANCELADA: 'Cancelada',
   NO_PRESENTADO: 'No presentado',
   FINALIZADA: 'Finalizada',
+  RECHAZADA: 'Rechazada',
 };
 
 /** Pantalla 3 · F05 Mis reservas y cancelación. */

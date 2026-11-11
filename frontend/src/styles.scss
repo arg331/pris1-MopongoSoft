@@ -20,3 +20,82 @@ body {
   background: var(--mat-sys-surface-container-low);
   color: var(--mat-sys-on-surface);
 }
+
+/* ===================================================================================
+   Piezas comunes de las pantallas del Incremento 2 y del panel de administración.
+   =================================================================================== */
+.pagina-ancha { max-width: 1100px; margin: 0 auto; }
+.pagina-media { max-width: 860px; margin: 0 auto; }
+.titulo-pagina { font: var(--mat-sys-headline-small); margin: 0 0 4px; }
+.subtitulo { color: var(--mat-sys-on-surface-variant); margin: 0 0 16px; }
+.seccion { font: var(--mat-sys-title-medium); margin: 24px 0 8px; }
+
+.tarjeta {
+  background: var(--mat-sys-surface);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.tarjeta h3 { font: var(--mat-sys-title-small); margin: 0 0 4px; }
+.meta { color: var(--mat-sys-on-surface-variant); font: var(--mat-sys-body-small); }
+
+.aviso {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  margin: 8px 0 12px;
+  background: var(--mat-sys-secondary-container);
+  color: var(--mat-sys-on-secondary-container);
+}
+.aviso.error { background: var(--mat-sys-error-container); color: var(--mat-sys-on-error-container); }
+
+.rejilla-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0 12px;
+  align-items: start;
+}
+.rejilla-form .completo { grid-column: 1 / -1; }
+.fila-acciones { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: flex-end; }
+
+.tabla-envoltorio { overflow-x: auto; background: var(--mat-sys-surface); border-radius: 16px; }
+table.tabla { width: 100%; border-collapse: collapse; font: var(--mat-sys-body-medium); }
+table.tabla th {
+  text-align: left;
+  font: var(--mat-sys-label-large);
+  color: var(--mat-sys-on-surface-variant);
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+  white-space: nowrap;
+}
+table.tabla td { padding: 8px 12px; border-bottom: 1px solid var(--mat-sys-surface-container-high); vertical-align: middle; }
+table.tabla tr:last-child td { border-bottom: 0; }
+table.tabla td.acciones { white-space: nowrap; text-align: right; }
+.vacio { color: var(--mat-sys-on-surface-variant); padding: 12px; }
+
+.chip {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font: var(--mat-sys-label-small);
+  background: var(--mat-sys-surface-container-high);
+  color: var(--mat-sys-on-surface-variant);
+}
+.chip.ok { background: #d7f5dd; color: #0f5223; }
+.chip.pendiente { background: #fff1c2; color: #6b4e00; }
+.chip.mal { background: var(--mat-sys-error-container); color: var(--mat-sys-on-error-container); }
+
+.barra-porcentaje { height: 8px; border-radius: 4px; background: var(--mat-sys-surface-container-high); min-width: 80px; }
+.barra-porcentaje > span { display: block; height: 100%; border-radius: 4px; background: var(--mat-sys-primary); }
+
+.pestanas { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 16px; }
+.pestanas a {
+  padding: 8px 14px;
+  border-radius: 999px;
+  text-decoration: none;
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-label-large);
+}
+.pestanas a.activa { background: var(--mat-sys-secondary-container); color: var(--mat-sys-on-secondary-container); }

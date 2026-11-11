@@ -8,7 +8,8 @@
 BEGIN;
 
 -- Perfiles. Límites por perfil reservados para el futuro (ver 01_schema.sql).
--- EXTERNO existe pero, por P4, de momento no hace reservas individuales.
+-- EXTERNO (P4/P17): tutores de menores y representantes de entidades con convenio;
+-- no hace reservas individuales de carácter personal.
 INSERT INTO rol (codigo, nombre, max_reservas_semana, antelacion_max_dias) VALUES
   ('ALUMNADO', 'Alumnado',                                  3,  7),
   ('PDI',      'Personal Docente e Investigador',           3,  7),
@@ -58,6 +59,10 @@ SELECT i.id_instalacion, 6, TIME '09:00', TIME '14:00' FROM instalacion i;
 INSERT INTO entidad_convenio (nombre, cif, email_contacto, fecha_inicio) VALUES
   ('Club Deportivo Demo Almería', 'G00000000', 'contacto@clubdemo.test', DATE '2026-09-01');
 
+-- P17: el usuario externo de la demo representa al club con convenio.
+UPDATE usuario SET id_entidad = (SELECT id_entidad FROM entidad_convenio WHERE cif = 'G00000000')
+ WHERE email = 'externo.demo@correo.test';
+
 -- Reservas de ejemplo para la demo (martes 27/10/2026).
 INSERT INTO reserva (id_usuario, id_instalacion, fecha, hora_inicio, hora_fin, estado) VALUES
   ((SELECT id_usuario FROM usuario WHERE email='alumna.demo@ual.es'),
@@ -83,5 +88,67 @@ INSERT INTO bloqueo (id_instalacion, id_creador, inicio, fin, motivo, observacio
    (SELECT id_usuario FROM usuario WHERE email='admin.deportes@ual.es'),
    TIMESTAMP '2026-10-26 08:00', TIMESTAMP '2026-10-26 14:00', 'DOCENCIA',
    'Prácticas del Grado en Ciencias de la Actividad Física y del Deporte');
+
+-- P11: festivo nacional (martes 8/12/2026) → cierre de todas las instalaciones.
+DO $$
+BEGIN
+    PERFORM fn_cerrar_instalaciones(TIMESTAMP '2026-12-08 00:00', TIMESTAMP '2026-12-09 00:00',
+                                    'Festivo: Inmaculada Concepción',
+                                    (SELECT id_usuario FROM usuario WHERE email = 'admin.deportes@ual.es'));
+END $$;
+
+-- ---------------------------------------------------------------------
+-- VARIACIÓN 7 · INCREMENTO 2 (demo del Hito 2)
+-- ---------------------------------------------------------------------
+
+-- P17: tutora legal registrada como usuaria externa (sin entidad).
+INSERT INTO usuario (id_rol, nombre, apellidos, email, password_hash, telefono) VALUES
+  ((SELECT id_rol FROM rol WHERE codigo='EXTERNO'),  'Marta',  'Ruiz Campos',          'tutor.demo@correo.test',
+   '$2y$12$q.wXT5k8jab3pMVx/CB1s.AhNTN4kmybpFgMZZk8EYgiYrQ4.Zav2', '600000006');
+
+-- P22/P44: menor con el consentimiento de su tutora, su fecha, el teléfono de la tutora y un contacto de emergencia.
+INSERT INTO menor (id_tutor, nombre, apellidos, fecha_nacimiento, consentimiento_rgpd, fecha_consentimiento,
+                   telefono_tutor, contacto_emergencia_nombre, contacto_emergencia_telefono) VALUES
+  ((SELECT id_usuario FROM usuario WHERE email='tutor.demo@correo.test'),
+   'Hugo', 'Ruiz Campos', DATE '2017-03-15', TRUE, TIMESTAMP '2026-10-20 18:00',
+   '600000006', 'Antonio Ruiz Gómez (abuelo)', '600000007');
+
+-- P19: escuela con horario semanal fijo (lunes y miércoles 17:00-18:00) que bloquea
+-- la calle 2 de la piscina durante toda la temporada.
+INSERT INTO escuela (id_instalacion, nombre, temporada, fecha_inicio, fecha_fin, edad_min, edad_max, plazas, dias_horario) VALUES
+  ((SELECT id_instalacion FROM instalacion WHERE nombre='Piscina - calle 2'),
+   'Escuela de natación infantil', '2026-2027', DATE '2026-11-02', DATE '2027-06-11', 6, 12, 12,
+   'L y X 17:00-18:00');
+INSERT INTO horario_escuela (id_escuela, dia_semana, hora_inicio, hora_fin)
+SELECT id_escuela, d, TIME '17:00', TIME '18:00'
+  FROM escuela CROSS JOIN (VALUES (1), (3)) AS dias(d)
+ WHERE nombre = 'Escuela de natación infantil';
+DO $$
+BEGIN
+    PERFORM fn_generar_bloqueos_escuela(
+        (SELECT id_escuela FROM escuela WHERE nombre = 'Escuela de natación infantil'),
+        (SELECT id_usuario FROM usuario WHERE email = 'admin.deportes@ual.es'));
+END $$;
+
+-- P20: Hugo tiene 9 años a la fecha de inscripción (tramo 6-12).
+INSERT INTO inscripcion_escuela (id_escuela, id_menor, fecha_inscripcion) VALUES
+  ((SELECT id_escuela FROM escuela WHERE nombre='Escuela de natación infantil'),
+   (SELECT id_menor FROM menor WHERE nombre='Hugo'), TIMESTAMP '2026-10-20 18:05');
+
+-- P18: evento masivo publicado que ocupa dos instalaciones (un bloqueo EVENTO por instalación).
+-- P33: abierto a la comunidad universitaria y a los usuarios externos.
+INSERT INTO evento (id_organizador, nombre, descripcion, inicio, fin, aforo_maximo, estado, publico) VALUES
+  ((SELECT id_usuario FROM usuario WHERE email='admin.deportes@ual.es'),
+   'Jornada de puertas abiertas del deporte UAL',
+   'Exhibiciones y prueba gratuita de actividades en el pabellón y la sala multifunción',
+   TIMESTAMP '2026-12-19 09:00', TIMESTAMP '2026-12-19 14:00', 200, 'PUBLICADO', 'COMUNIDAD_Y_EXTERNOS');
+INSERT INTO bloqueo (id_instalacion, id_creador, id_evento, inicio, fin, motivo, observaciones)
+SELECT i.id_instalacion, e.id_organizador, e.id_evento, e.inicio, e.fin, 'EVENTO', 'Evento: ' || e.nombre
+  FROM evento e CROSS JOIN instalacion i
+ WHERE e.nombre = 'Jornada de puertas abiertas del deporte UAL'
+   AND i.nombre IN ('Pabellón cubierto', 'Sala multifunción A');
+INSERT INTO inscripcion_evento (id_evento, id_usuario, fecha_inscripcion) VALUES
+  ((SELECT id_evento FROM evento WHERE nombre='Jornada de puertas abiertas del deporte UAL'),
+   (SELECT id_usuario FROM usuario WHERE email='alumna.demo@ual.es'), TIMESTAMP '2026-10-22 12:00');
 
 COMMIT;

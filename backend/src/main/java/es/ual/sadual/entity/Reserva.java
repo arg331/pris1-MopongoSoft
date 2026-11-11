@@ -33,11 +33,11 @@ public class Reserva {
     @JoinColumn(name = "id_instalacion", nullable = false)
     private Instalacion instalacion;
 
-    /** Reserva institucional (Variación 7, Incremento 2). En V1 siempre null. */
+    /** P21: entidad con convenio en cuyo nombre se reserva (solo reservas institucionales). */
     @Column(name = "id_entidad")
     private Integer idEntidad;
 
-    /** Administrador que autoriza (Variación 7, Incremento 2). En V1 siempre null. */
+    /** P21: administrador que autoriza o rechaza la reserva institucional. */
     @Column(name = "id_autorizador")
     private Integer idAutorizador;
 
@@ -60,6 +60,12 @@ public class Reserva {
     @Column(name = "fecha_cancelacion")
     private LocalDateTime fechaCancelacion;
 
+    @Column(name = "fecha_resolucion")
+    private LocalDateTime fechaResolucion;
+
+    @Column(name = "motivo_rechazo")
+    private String motivoRechazo;
+
     protected Reserva() {
     }
 
@@ -74,6 +80,38 @@ public class Reserva {
         r.estado = EstadoReserva.CONFIRMADA;
         r.fechaCreacion = ahora;
         return r;
+    }
+
+    /**
+     * P21: reserva institucional que hace un representante en nombre de su entidad.
+     * Nace PENDIENTE (ya ocupa la franja) hasta que la administración la autoriza o la rechaza.
+     */
+    public static Reserva institucional(Usuario representante, Instalacion instalacion, Integer idEntidad,
+                                        LocalDate fecha, LocalTime horaInicio, LocalTime horaFin,
+                                        LocalDateTime ahora) {
+        Reserva r = confirmada(representante, instalacion, fecha, horaInicio, horaFin, ahora);
+        r.idEntidad = idEntidad;
+        r.estado = EstadoReserva.PENDIENTE;
+        return r;
+    }
+
+    public boolean isInstitucional() {
+        return idEntidad != null;
+    }
+
+    /** P21: la administración autoriza la reserva institucional pendiente. */
+    public void autorizar(Integer idAdmin, LocalDateTime ahora) {
+        this.estado = EstadoReserva.CONFIRMADA;
+        this.idAutorizador = idAdmin;
+        this.fechaResolucion = ahora;
+    }
+
+    /** P21: la administración rechaza la reserva institucional pendiente; la franja queda libre. */
+    public void rechazar(Integer idAdmin, String motivo, LocalDateTime ahora) {
+        this.estado = EstadoReserva.RECHAZADA;
+        this.idAutorizador = idAdmin;
+        this.fechaResolucion = ahora;
+        this.motivoRechazo = motivo;
     }
 
     public void cancelar(LocalDateTime ahora) {
@@ -109,4 +147,6 @@ public class Reserva {
     public EstadoReserva getEstado() { return estado; }
     public LocalDateTime getFechaCreacion() { return fechaCreacion; }
     public LocalDateTime getFechaCancelacion() { return fechaCancelacion; }
+    public LocalDateTime getFechaResolucion() { return fechaResolucion; }
+    public String getMotivoRechazo() { return motivoRechazo; }
 }

@@ -84,6 +84,7 @@ export class InstalacionesPage implements OnInit {
   protected readonly esHoy = computed(() => this.fecha().getTime() === this.hoy.getTime());
   /** P4: los perfiles sin reservas individuales ven la disponibilidad pero no reservan. */
   protected readonly puedeReservar = computed(() => this.auth.usuario()?.puedeReservar ?? false);
+  protected readonly esRepresentante = computed(() => this.auth.usuario()?.representante === true);
 
   ngOnInit(): void {
     this.instalacionesApi.tipos().subscribe({
@@ -159,9 +160,11 @@ export class InstalacionesPage implements OnInit {
   }
 
   protected etiqueta(franja: Franja): string {
-    return franja.estado === 'BLOQUEADA' && franja.motivo
-      ? `Bloqueada · ${franja.motivo.toLowerCase()}`
-      : ETIQUETA_ESTADO[franja.estado];
+    if (franja.estado === 'BLOQUEADA' && franja.motivo) {
+      // P11: festivos y cierres extraordinarios se muestran como "Cerrado"
+      return franja.motivo === 'CIERRE' ? 'Cerrado' : `Bloqueada · ${franja.motivo.toLowerCase()}`;
+    }
+    return ETIQUETA_ESTADO[franja.estado];
   }
 
   private cargarCatalogo(): void {

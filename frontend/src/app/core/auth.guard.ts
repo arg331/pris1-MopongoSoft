@@ -11,6 +11,12 @@ export const authGuard: CanActivateFn = (_route, state) => {
   return inject(Router).createUrlTree(['/login'], { queryParams: { volver: state.url } });
 };
 
+/** Panel de administración: solo perfil ADMIN (el backend lo exige también en /api/admin/**). */
+export const adminGuard: CanActivateFn = () => {
+  const auth = inject(AuthService);
+  return auth.esAdmin() ? true : inject(Router).createUrlTree(['/instalaciones']);
+};
+
 /** La pantalla de login no tiene sentido con la sesión ya iniciada. */
 export const invitadoGuard: CanActivateFn = () => {
   const auth = inject(AuthService);

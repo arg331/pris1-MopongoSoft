@@ -47,6 +47,10 @@ public class Usuario {
     @Column(name = "fecha_alta", nullable = false, updatable = false)
     private LocalDateTime fechaAlta;
 
+    /** P17: entidad con convenio a la que representa (solo perfil EXTERNO, tg_validar_representante). */
+    @Column(name = "id_entidad")
+    private Integer idEntidad;
+
     protected Usuario() {
     }
 
@@ -56,6 +60,37 @@ public class Usuario {
         this.apellidos = apellidos;
         this.email = email;
         this.passwordHash = passwordHash;
+    }
+
+    /** P17: alta por autorregistro de un tutor (sin entidad) o de un representante (con entidad). */
+    public static Usuario externoRegistrado(Rol rolExterno, String nombre, String apellidos, String email,
+                                            String passwordHash, String telefono, Integer idEntidad,
+                                            LocalDateTime ahora) {
+        Usuario u = new Usuario(rolExterno, nombre, apellidos, email, passwordHash);
+        u.telefono = telefono;
+        u.idEntidad = idEntidad;
+        u.fechaAlta = ahora;
+        // P23: el representante queda pendiente hasta que la administración lo valide y lo active
+        u.activo = idEntidad == null;
+        return u;
+    }
+
+    /** F07 · P16: la comunidad universitaria (y el personal de administración) la da de alta la administración. */
+    public static Usuario altaPorAdministracion(Rol rol, String nombre, String apellidos, String email,
+                                                String passwordHash, String telefono, LocalDateTime ahora) {
+        Usuario u = new Usuario(rol, nombre, apellidos, email, passwordHash);
+        u.telefono = telefono;
+        u.fechaAlta = ahora;
+        return u;
+    }
+
+    /** F07 · Cambio de perfil. Un usuario con entidad solo puede ser EXTERNO (tg_validar_representante). */
+    public void cambiarRol(Rol rol) {
+        this.rol = rol;
+    }
+
+    public boolean esRepresentante() {
+        return idEntidad != null;
     }
 
     @PrePersist
@@ -73,6 +108,7 @@ public class Usuario {
     public String getPasswordHash() { return passwordHash; }
     public String getTelefono() { return telefono; }
     public LocalDateTime getFechaAlta() { return fechaAlta; }
+    public Integer getIdEntidad() { return idEntidad; }
 
     public boolean isActivo() {
         return Boolean.TRUE.equals(activo);
