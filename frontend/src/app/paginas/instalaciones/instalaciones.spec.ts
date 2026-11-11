@@ -195,6 +195,16 @@ describe('InstalacionesPage (F02 + F03 + F04)', () => {
     expect(html.querySelector('[role=alert]')).toBeNull();
   });
 
+  it('P11: un festivo o cierre extraordinario se muestra como "Cerrado"', async () => {
+    const d = disponibilidadPadel(HOY);
+    d.franjas[3] = { ...d.franjas[3], motivo: 'CIERRE' };
+    api.disponibilidad.mockReturnValue(of(d));
+    await pulsar(html.querySelector('button.instalacion'));
+
+    expect(franjas()[3].textContent).toContain('Cerrado');
+    expect(franjas()[3].disabled).toBe(true);
+  });
+
   it('avisa cuando la instalación no abre ese día', async () => {
     api.disponibilidad.mockReturnValue(of({ ...disponibilidadPadel(HOY), franjas: [] }));
     await pulsar(html.querySelector('button.instalacion'));
