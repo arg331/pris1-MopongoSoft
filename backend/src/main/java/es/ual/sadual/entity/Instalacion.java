@@ -51,6 +51,17 @@ public class Instalacion {
         this.duracionFranjaMin = duracionFranjaMin;
     }
 
+    /** F06 · Edición desde el panel. P12: cambiar la duración no altera las reservas ya hechas. */
+    public void actualizar(TipoInstalacion tipo, String nombre, String ubicacion, short aforo,
+                           short duracionFranjaMin, String descripcion) {
+        this.tipo = tipo;
+        this.nombre = nombre;
+        this.ubicacion = ubicacion;
+        this.aforo = aforo;
+        this.duracionFranjaMin = duracionFranjaMin;
+        this.descripcion = descripcion;
+    }
+
     public Integer getId() { return id; }
     public TipoInstalacion getTipo() { return tipo; }
     public String getNombre() { return nombre; }

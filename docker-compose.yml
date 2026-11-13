@@ -16,6 +16,8 @@ services:
     volumes:
       - ./database/01_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
       - ./database/02_seed.sql:/docker-entrypoint-initdb.d/02_seed.sql:ro
+      # Datos con fechas de la semana de la defensa del Hito 2 (no los usan las pruebas automáticas)
+      - ./database/04_demo_hito2.sql:/docker-entrypoint-initdb.d/04_demo_hito2.sql:ro
       - sadual-datos:/var/lib/postgresql/data
 
 volumes:

@@ -69,8 +69,13 @@ class AuthIT extends AbstractIntegracionIT {
     void un_usuario_desactivado_no_puede_entrar() throws Exception {
         jdbc.update("UPDATE usuario SET activo = FALSE WHERE email = 'pas.demo@ual.es'");
 
+        // Con la contraseña correcta se explica el motivo (P23); con una incorrecta, el mensaje genérico
         mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
                         .content(credenciales("pas.demo@ual.es", PASSWORD_DEMO)))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.codigo").value("CUENTA_INACTIVA"));
+        mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
+                        .content(credenciales("pas.demo@ual.es", "otra-cosa")))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -109,10 +114,10 @@ class AuthIT extends AbstractIntegracionIT {
 
     @Test
     void solo_el_admin_entra_en_rutas_de_administracion() throws Exception {
-        // En V1 aún no hay endpoints /api/admin: el admin obtiene 404 y el resto 403.
+        // Desde el Incremento 2 existe el panel (F07): el admin entra y el resto recibe 403.
         mvc.perform(get("/api/admin/usuarios").header("Authorization", bearer(token("alumna.demo@ual.es"))))
                 .andExpect(status().isForbidden());
         mvc.perform(get("/api/admin/usuarios").header("Authorization", bearer(token("admin.deportes@ual.es"))))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isOk());
     }
 }

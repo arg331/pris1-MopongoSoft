@@ -84,6 +84,7 @@ export class InstalacionesPage implements OnInit {
   protected readonly esHoy = computed(() => this.fecha().getTime() === this.hoy.getTime());
   /** P4: los perfiles sin reservas individuales ven la disponibilidad pero no reservan. */
   protected readonly puedeReservar = computed(() => this.auth.usuario()?.puedeReservar ?? false);
+  protected readonly esRepresentante = computed(() => this.auth.usuario()?.representante === true);
 
   ngOnInit(): void {
     this.instalacionesApi.tipos().subscribe({

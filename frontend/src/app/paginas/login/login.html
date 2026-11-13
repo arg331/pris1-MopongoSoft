@@ -46,6 +46,9 @@
       </button>
     </form>
 
+    <p class="pie">¿Eres tutor/a legal o representas a una entidad con convenio?
+      <a routerLink="/registro">Crea tu cuenta</a></p>
+
     @if (modoDesarrollo) {
       <aside class="demo" aria-label="Usuarios de demostración">
         <p>Entorno de desarrollo · usuarios demo (contraseña <code>Sadual2026!</code>)</p>
@@ -53,7 +56,8 @@
           <button type="button" (click)="usarDemo('alumna.demo@ual.es')">Alumnado</button>
           <button type="button" (click)="usarDemo('pdi.demo@ual.es')">PDI</button>
           <button type="button" (click)="usarDemo('pas.demo@ual.es')">PAS</button>
-          <button type="button" (click)="usarDemo('externo.demo@correo.test')">Externo</button>
+          <button type="button" (click)="usarDemo('externo.demo@correo.test')">Representante</button>
+          <button type="button" (click)="usarDemo('tutor.demo@correo.test')">Tutora</button>
           <button type="button" (click)="usarDemo('admin.deportes@ual.es')">Admin</button>
         </div>
       </aside>

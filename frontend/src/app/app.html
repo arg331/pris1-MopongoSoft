@@ -8,9 +8,31 @@
       <a mat-button routerLink="/instalaciones" routerLinkActive="activo">
         <mat-icon>calendar_month</mat-icon><span class="texto">Reservar</span>
       </a>
-      <a mat-button routerLink="/mis-reservas" routerLinkActive="activo">
-        <mat-icon>event_available</mat-icon><span class="texto">Mis reservas</span>
-      </a>
+      @if (usuario.puedeReservar) {
+        <a mat-button routerLink="/mis-reservas" routerLinkActive="activo">
+          <mat-icon>event_available</mat-icon><span class="texto">Mis reservas</span>
+        </a>
+      }
+      @if (!auth.esAdmin()) {
+        <a mat-button routerLink="/eventos" routerLinkActive="activo">
+          <mat-icon>celebration</mat-icon><span class="texto">Eventos</span>
+        </a>
+      }
+      @if (auth.puedeTutelar()) {
+        <a mat-button routerLink="/escuelas" routerLinkActive="activo">
+          <mat-icon>child_care</mat-icon><span class="texto">Escuelas</span>
+        </a>
+      }
+      @if (auth.esRepresentante()) {
+        <a mat-button routerLink="/institucional" routerLinkActive="activo">
+          <mat-icon>apartment</mat-icon><span class="texto">Institucional</span>
+        </a>
+      }
+      @if (auth.esAdmin()) {
+        <a mat-button routerLink="/admin" routerLinkActive="activo">
+          <mat-icon>admin_panel_settings</mat-icon><span class="texto">Administración</span>
+        </a>
+      }
     </nav>
     <div class="usuario">
       <span class="nombre">{{ usuario.nombre }}</span>

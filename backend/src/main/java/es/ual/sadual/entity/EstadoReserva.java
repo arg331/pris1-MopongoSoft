@@ -9,7 +9,9 @@ public enum EstadoReserva {
     CONFIRMADA,
     CANCELADA,
     NO_PRESENTADO,
-    FINALIZADA;
+    FINALIZADA,
+    /** P21: reserva institucional que la administración no autoriza. No ocupa franja. */
+    RECHAZADA;
 
     /** Estados que ocupan franja y cuentan para el límite diario (P1). */
     public static final Set<EstadoReserva> ACTIVOS = EnumSet.of(PENDIENTE, CONFIRMADA);

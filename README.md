@@ -38,14 +38,23 @@ horario L–V 8–22 y sábados 9–14 con festivos como cierres (P11), franjas 
 | F03 | Consulta de disponibilidad | Must | ✅ Implementada (backend + pantalla) |
 | F04 | Reserva de una franja (cero dobles reservas) | Must | ✅ Implementada (backend + pantalla) |
 | F05 | Mis reservas y cancelación | Must | ✅ Implementada (backend + pantalla) |
-| F06 | Panel admin de instalaciones (duración de franja configurable, P12) | Should | Sprint 2 · modelo de datos listo |
-| F07 | Gestión básica de usuarios | Should | Sprint 2 |
-| F08 | Bloqueo de franjas y cierres por festivos (P7, P11) | Should | Reglas en BD ✅ y visibles en F03 · pantalla en Sprint 2 |
+| F06 | Panel admin de instalaciones (duración de franja configurable, P12) | **Must** (núcleo común) | ✅ Incremento 2 (backend + pantalla) |
+| F07 | Gestión de usuarios (alta de la comunidad UAL, P16) | **Must** (núcleo común) | ✅ Incremento 2 (backend + pantalla) |
+| F08 | Bloqueo de franjas y cierres por festivos (P7, P11) | Should | ✅ Incremento 2 (backend + pantalla) |
 | F09 | Límites por perfil | Could | Columnas preparadas en `rol`; el límite común (P1) ya se aplica |
-| F10 | Consulta general de reservas | Could | Vista `v_reservas_detalle` lista |
-| F11 | Experiencia móvil optimizada | Could | Pantallas F01–F05 adaptadas a móvil |
-| F12 | Sanción por no presentarse (P3) | Could | ✅ BD + endpoint de administración |
-| — | Variación 7 (eventos, escuelas, reservas institucionales, registro de tutores y representantes P17) | Won't (V1) | Incremento 2 · modelo de datos ya preparado |
+| F10 | Consulta general de reservas | **Must** (núcleo común) | ✅ Incremento 2 (backend + pantalla) |
+| F11 | Experiencia móvil optimizada | Could | Pantallas adaptadas a móvil |
+| F12 | Sanción por no presentarse (P3) | Could | ✅ BD, API y botón en la consulta general |
+| V7 | Registro de tutores y representantes (P17) | Incremento 2 | ✅ backend + pantalla |
+| V7 | Reservas institucionales con autorización (P21) | Incremento 2 | ✅ backend + pantallas (representante y bandeja de administración) |
+| V7 | Eventos masivos con aforo (P18) | Incremento 2 | ✅ backend + pantallas (usuarios y administración) |
+| V7 | Escuelas, menores y consentimiento RGPD (P19, P20, P22) | Incremento 2 | ✅ backend + pantallas (tutor y administración) |
+| Inc. 3 | Informes de ocupación, uso, cancelaciones y no presentados (P9) | Incremento 3 | ✅ backend + pantalla |
+
+> Estado a 09/11/2026: todo lo marcado como Incremento 2/3 está implementado y probado en la rama
+> `feature/variacion7-backend`, **pendiente de pull request y revisión** para entrar en `main`. Las reglas
+> de la Variación 7 (P23–P46) las validó el cliente el 11/11/2026 y ya están aplicadas; las marcadas con ❓
+> en `docs/requisitos-cliente.md` (P47–P60) esperan su respuesta.
 
 ## Tecnologías
 
@@ -107,18 +116,26 @@ npm start
 > En Windows: `$env:SADUAL_DB_URL="jdbc:postgresql://localhost:5434/sadual"; mvn spring-boot:run` (PowerShell).
 
 Usuarios de demostración (solo desarrollo), todos con la contraseña `Sadual2026!`:
-`alumna.demo@ual.es`, `pdi.demo@ual.es`, `pas.demo@ual.es`, `externo.demo@correo.test`,
-`admin.deportes@ual.es`. En la pantalla de login hay atajos para rellenarlos. El usuario externo puede
-entrar y consultar, pero no reservar (P4).
+`alumna.demo@ual.es`, `pdi.demo@ual.es`, `pas.demo@ual.es`, `externo.demo@correo.test` (representante del
+Club Deportivo Demo Almería), `tutor.demo@correo.test` (tutora de Hugo, inscrito en la escuela de natación) y
+`admin.deportes@ual.es`. En la pantalla de login hay atajos para rellenarlos. Los usuarios externos no hacen
+reservas individuales (P4/P17).
+
+`docker compose` carga además `database/04_demo_hito2.sql`, con reservas de la semana de la defensa (15–18/12).
+**Si ya tenías la base de datos creada**, recréala para cargar el esquema v1.2 y los datos nuevos:
+`docker compose down -v && docker compose up -d` (borra los datos locales).
 
 ## Pruebas
 
 | Qué | Comando | Necesita |
 |---|---|---|
-| Modelo de datos (T1–T16) | `psql -d sadual -f database/03_pruebas.sql` | BD creada |
+| Modelo de datos (T1–T23, incluida la Variación 7) | `psql -d sadual -f database/03_pruebas.sql` | BD creada |
 | Backend · unitarias | `cd backend && mvn test` | — |
-| Backend · integración (incluye pruebas de reservas simultáneas) | `cd backend && mvn verify` | Docker |
+| Backend · integración (reservas simultáneas, Variación 7, panel de administración e informes) | `cd backend && mvn verify` | Docker |
 | Frontend | `cd frontend && npm test` | — |
+
+Resultados a 11/11/2026: modelo de datos 23/23 · backend 46 unitarias y 128 de integración · frontend 76 pruebas
+y build de producción sin avisos. Además se recorrieron las pantallas con Chrome (sin errores de JavaScript).
 
 ## Guion de la demo del Hito 1
 
@@ -137,6 +154,32 @@ Con los tres servicios arrancados, en `http://localhost:4200`:
 
 > Ojo con la hora: el día de la demo, las franjas que empiezan en menos de 3 horas salen *Fuera de plazo* (P2).
 
+## Guion de la demo del Hito 2 (14/12/2026)
+
+Con la base de datos recreada (incluye `04_demo_hito2.sql`) y los tres servicios arrancados:
+
+1. **Registro (P17, P23, P24).** Desde el login, *Crea tu cuenta* → representante con el CIF `G00000000` →
+   queda **pendiente**; si intenta entrar, se le avisa. Admin → *Usuarios* → filtro *Representantes pendientes*
+   → *Validar y activar* → ya puede entrar. (Un tutor debe dar teléfono y entra directamente.)
+2. **Reserva institucional (P21, P27, P28).** Representante (atajo *Representante*): *Institucional* → fútbol 7,
+   un día laborable con al menos 48 h de margen → pulsar la primera y la última franja (hasta 4 h) →
+   *Solicitar*: queda **pendiente** y la franja ya aparece ocupada en el catálogo.
+3. **Autorización (P21).** Admin → *Administración › Institucionales* → autorizar una y rechazar otra con
+   motivo → el representante lo ve en su lista (con el motivo).
+4. **Eventos (P18, P33, P35).** Admin → *Eventos* → crear un evento en dos instalaciones eligiendo si admite
+   externos (las reservas que pisa se cancelan, P7) → *Publicar*. Alumna → *Eventos* → *Inscribirme* (aforo). Admin → *Cancelar evento*: se
+   anulan las inscripciones y se liberan las instalaciones.
+5. **Escuelas (P19, P20, P22, P39, P44, P45).** Tutora (atajo *Tutora*, o un miembro de la UAL) → *Escuelas* →
+   registrar a un menor con teléfono y contacto de emergencia (sin la casilla de consentimiento no se puede) →
+   inscribirlo; con una edad fuera de tramo el sistema lo impide. *Retirar consentimiento* borra sus datos. En el
+   catálogo, la calle 2 de la piscina aparece *Bloqueada · escuela* lunes y miércoles de 17 a 18.
+6. **Entidades (P25, P32).** Admin → *Entidades*: representantes, ausencias y suspensión temporal.
+7. **Panel del núcleo común.** *Instalaciones* (alta con el horario general y duración de franja, P12),
+   *Usuarios* (alta de un PDI, P16), *Bloqueos y cierres* (cierre por festivo, P11), *Reservas* (consulta
+   general y *No presentado*, P3).
+8. **Informes (P9).** *Informes* semanal y mensual: ocupación por instalación y por franja, uso por perfil,
+   cancelaciones y no presentados.
+
 ## Flujo de trabajo
 
 - `main` protegida: solo recibe cambios por pull request revisado por otro integrante.
@@ -149,3 +192,10 @@ Con los tres servicios arrancados, en `http://localhost:4200`:
 El modelo de datos (MER y modelo relacional) está en `docs/modelo-datos/`. Para regenerar los diagramas
 tras cambiar el esquema: `python3 docs/modelo-datos/fuentes/generar_diagramas.py` (requiere Graphviz).
 El resto de la documentación del curso (G1–G4) se irá añadiendo a `docs/`.
+
+**Incremento 2 (Variación 7) y seguimiento del proyecto (Hito 2):**
+
+- Contrato de la API de eventos, escuelas, registro y reservas institucionales: [`backend/README.md`](backend/README.md#contrato-de-la-api--incremento-2-variación-7).
+- Decisiones pendientes de validar con el cliente (P23–P46): [`docs/requisitos-cliente.md`](docs/requisitos-cliente.md) y [`docs/cliente/2026-11-09_preguntas_incremento2.md`](docs/cliente/2026-11-09_preguntas_incremento2.md).
+- Seguimiento y control (Bloque 4): [registro de tareas y sprints](docs/seguimiento/01_registro-tareas-y-sprints.md), [incidencias](docs/seguimiento/02_registro-incidencias.md), [solicitudes de cambio](docs/seguimiento/03_registro-cambios.md) y [métricas](docs/seguimiento/04_metricas-y-control.md).
+- Propuesta de los 11 artefactos del expediente: [`docs/hito2/expediente-11-artefactos.md`](docs/hito2/expediente-11-artefactos.md).

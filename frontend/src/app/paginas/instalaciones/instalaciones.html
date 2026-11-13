@@ -5,7 +5,10 @@
     @if (!puedeReservar()) {
       <p class="nota" role="note">
         Las reservas individuales son solo para la comunidad universitaria. Puedes consultar la
-        disponibilidad; la gestión de escuelas y reservas institucionales llegará en la próxima versión.
+        disponibilidad, inscribir a menores en las <a routerLink="/escuelas">escuelas</a>
+        @if (esRepresentante()) {
+          y solicitar <a routerLink="/institucional">reservas institucionales</a> para tu entidad
+        }.
       </p>
     }
 

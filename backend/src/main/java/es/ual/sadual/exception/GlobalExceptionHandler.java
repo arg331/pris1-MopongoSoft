@@ -47,22 +47,44 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             log.error("Error de acceso a datos no traducible", ex);
             return problema(HttpStatus.INTERNAL_SERVER_ERROR, "ERROR_INTERNO", "Error interno del servidor");
         }
+        String mensajeSql = String.valueOf(sql.getMessage());
         return switch (sqlState) {
-            case "23P01" -> problema(HttpStatus.CONFLICT, "FRANJA_OCUPADA",
-                    "La franja acaba de ser reservada por otra persona");
+            case "23P01" -> mensajeSql.contains("ex_bloqueo_sin_solape")
+                    ? problema(HttpStatus.CONFLICT, "INSTALACION_NO_DISPONIBLE",
+                            "La instalación ya está bloqueada en ese periodo")
+                    : problema(HttpStatus.CONFLICT, "FRANJA_OCUPADA",
+                            "La franja acaba de ser reservada por otra persona");
             case "P0001" -> problema(HttpStatus.CONFLICT, "FRANJA_BLOQUEADA",
                     "La instalación está bloqueada en esa franja");
             case "P0002" -> problema(HttpStatus.UNPROCESSABLE_ENTITY, "FUERA_DE_HORARIO",
                     "La franja solicitada está fuera del horario de apertura");
+            // Variación 7 (Incremento 2): reglas que garantizan los triggers
+            case "P0003" -> problema(HttpStatus.CONFLICT, "AFORO_COMPLETO",
+                    "El evento ha completado su aforo");
+            case "P0004" -> problema(HttpStatus.UNPROCESSABLE_ENTITY, "EDAD_FUERA_DE_TRAMO",
+                    "La edad del menor no está dentro del tramo de la escuela");
+            case "P0005" -> problema(HttpStatus.CONFLICT, "SIN_PLAZAS",
+                    "No quedan plazas en la escuela");
+            case "P0006" -> problema(HttpStatus.UNPROCESSABLE_ENTITY, "REPRESENTANTE_NO_VALIDO",
+                    "Solo un usuario externo puede representar a una entidad con convenio");
             // Red de seguridad: con el candado por instalación no deberían darse, pero si otra vía
             // compite por las mismas filas, el usuario recibe un 409 y no un 500.
             case "40P01", "40001", "55P03" -> problema(HttpStatus.CONFLICT, "CONFLICTO_CONCURRENTE",
                     "Otra persona estaba reservando a la vez. Inténtalo de nuevo");
             case "23514" -> problema(HttpStatus.UNPROCESSABLE_ENTITY, "DATOS_INCOHERENTES",
                     "Los datos enviados no son coherentes");
-            case "23505" -> String.valueOf(sql.getMessage()).contains("uq_reserva_usuario_dia")
+            case "23505" -> mensajeSql.contains("uq_reserva_usuario_dia")
                     ? problema(HttpStatus.CONFLICT, "LIMITE_DIARIO",
                             "Ya tienes una reserva ese día: solo se permite una reserva por día")
+                    : mensajeSql.contains("usuario_email_key")
+                    ? problema(HttpStatus.CONFLICT, "EMAIL_EN_USO", "Ya existe una cuenta con ese email")
+                    : mensajeSql.contains("instalacion_nombre_key")
+                    ? problema(HttpStatus.CONFLICT, "INSTALACION_DUPLICADA", "Ya existe una instalación con ese nombre")
+                    : mensajeSql.contains("entidad_convenio_cif_key")
+                    ? problema(HttpStatus.CONFLICT, "ENTIDAD_DUPLICADA", "Ya existe una entidad con ese CIF")
+                    : mensajeSql.contains("uq_escuela")
+                    ? problema(HttpStatus.CONFLICT, "ESCUELA_DUPLICADA",
+                            "Ya existe una escuela con ese nombre en esa temporada")
                     : problema(HttpStatus.CONFLICT, "DUPLICADO", "Ya existe un registro con esos datos");
             case "23503" -> problema(HttpStatus.UNPROCESSABLE_ENTITY, "REFERENCIA_INVALIDA",
                     "Se hace referencia a un elemento que no existe");
