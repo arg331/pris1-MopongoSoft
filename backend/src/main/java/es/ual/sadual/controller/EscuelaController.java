@@ -49,7 +49,7 @@ public class EscuelaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(servicio.registrarMenor(UsuarioActual.id(jwt), peticion));
     }
 
-    /** ❓P52 · Corrección del teléfono del tutor y del contacto de emergencia. */
+    /** P52 · Corrección del teléfono del tutor y del contacto de emergencia. */
     @PatchMapping("/menores/{id}/contacto")
     public MenorDto actualizarContacto(@AuthenticationPrincipal Jwt jwt, @PathVariable Integer id,
                                        @Valid @RequestBody ContactoMenorRequest peticion) {

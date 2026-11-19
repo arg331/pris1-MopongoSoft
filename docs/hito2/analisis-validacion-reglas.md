@@ -9,8 +9,12 @@ tres grupos:
 
 - **V** · validada por el cliente (P1–P46) o por el criterio de aceptación de G4;
 - **T** · decisión técnica o de integridad, sin efecto de negocio (no se consulta);
-- **❓** · regla de negocio sin validar, que pasa a la consulta final
+- **?** · regla de negocio sin validar, que pasa a la consulta final
   ([`../cliente/2026-11-11_consulta_final_P47-P60.md`](../cliente/2026-11-11_consulta_final_P47-P60.md)).
+
+> **18/11/2026:** el cliente validó toda la consulta final P47–P60 ([respuesta](../cliente/2026-11-18_respuesta_cliente_P47-P60.md)).
+> Las reglas que estaban marcadas ? pasan a **V** con la fecha. En P52 se aplicó la alternativa: la administración
+> también ve el contacto de emergencia.
 
 Además se buscaron **huecos funcionales**, es decir, situaciones que el sistema no contempla y en las que el
 cliente esperaría una regla (por ejemplo, cancelar una escuela).
@@ -32,12 +36,12 @@ cliente esperaría una regla (por ejemplo, cancelar una escuela).
 | Cancelar hasta que empieza, sin penalización | P14 | V |
 | Un único perfil ADMIN que incluye recepción | P15 | V |
 | La comunidad UAL la da de alta la administración | P16 | V |
-| Informes de ocupación, uso por perfil, cancelaciones y no presentados, semanal y mensual | P9 | V (contenido) · ❓P51 (cálculo) |
-| Baja de instalación con reservas futuras; reservas fuera de un horario nuevo | — | ❓P47 |
-| Contraseña inicial en el alta por la administración | — | ❓P48 |
-| Reservas de un usuario desactivado; la administración cancela cualquier reserva | — | ❓P49 |
-| Reservas canceladas por un bloqueo que luego se elimina | — | ❓P50 |
-| No se pueden solapar dos bloqueos ni crear un evento sobre un bloqueo | — | ❓P54 |
+| Informes de ocupación, uso por perfil, cancelaciones y no presentados, semanal y mensual | P9 | V (contenido) · V (P51, 18/11) (cálculo) |
+| Baja de instalación con reservas futuras; reservas fuera de un horario nuevo | — | V (P47, 18/11) |
+| Contraseña inicial en el alta por la administración | — | V (P48, 18/11) |
+| Reservas de un usuario desactivado; la administración cancela cualquier reserva | — | V (P49, 18/11) |
+| Reservas canceladas por un bloqueo que luego se elimina | — | V (P50, 18/11) |
+| No se pueden solapar dos bloqueos ni crear un evento sobre un bloqueo | — | V (P54, 18/11) |
 | Formato de email, nombres únicos de instalación, CIF de 9 caracteres, fechas coherentes, no reservar en el pasado, franjas alineadas al inicio de franja | Integridad | T |
 | Al entrar con una cuenta inactiva (contraseña correcta) se explica el motivo | Consecuencia de P23 (CAM-11) | T |
 | El administrador no puede desactivarse ni quitarse el perfil a sí mismo | Salvaguarda | T |
@@ -50,8 +54,8 @@ cliente esperaría una regla (por ejemplo, cancelar una escuela).
 | El representante indica el CIF de una entidad con convenio vigente y queda pendiente hasta que la administración lo valida | P17, P23, P29 | V |
 | Teléfono obligatorio para tutores, opcional para representantes | P24 | V |
 | Las entidades las da de alta la administración; varios representantes por entidad | P25 | V |
-| Visibilidad de las solicitudes entre representantes de una misma entidad | — | ❓P60 |
-| Reservas futuras al terminar o desactivarse el convenio | — | ❓P59 |
+| Visibilidad de las solicitudes entre representantes de una misma entidad | — | V (P60, 18/11) |
+| Reservas futuras al terminar o desactivarse el convenio | — | V (P59, 18/11) |
 
 ## 3. Variación 7 · Reservas institucionales
 
@@ -64,7 +68,7 @@ cliente esperaría una regla (por ejemplo, cancelar una escuela).
 | Motivo de rechazo obligatorio, visible para el representante | P30 | V |
 | El representante cancela hasta el inicio | P31 | V |
 | La ausencia no sanciona al representante; se registra para la entidad; con 3, la administración puede suspender | P32 | V |
-| Qué ausencias se consideran justificadas | — | ❓P53 |
+| Qué ausencias se consideran justificadas | — | V (P53, 18/11) |
 
 ## 4. Variación 7 · Eventos
 
@@ -77,8 +81,8 @@ cliente esperaría una regla (por ejemplo, cancelar una escuela).
 | Pueden celebrarse fuera del horario de apertura | P36 | V |
 | Un aforo para todo el evento | P37 | V |
 | Las reservas canceladas no se recuperan al cancelar el evento | P38 | V |
-| La administración no se inscribe | — | ❓P57 |
-| Una sanción P3 no impide inscribirse | — | ❓P58 |
+| La administración no se inscribe | — | V (P57, 18/11) |
+| Una sanción P3 no impide inscribirse | — | V (P58, 18/11) |
 
 ## 5. Variación 7 · Escuelas y menores
 
@@ -93,10 +97,10 @@ cliente esperaría una regla (por ejemplo, cancelar una escuela).
 | Inscripción y baja en cualquier momento mientras haya plazas | P43 | V |
 | Teléfono del tutor y contacto de emergencia; sin datos médicos | P44 | V |
 | La administración ve menor (nombre, nacimiento) y tutor (nombre, email, teléfono) | P46 | V |
-| Quién ve y corrige el contacto de emergencia | — | ❓P52 |
-| Reservas pendientes en las sesiones de una escuela nueva | — | ❓P55 |
-| Sesiones que coinciden con bloqueos que no son festivos (docencia, eventos) | — | ❓P54 |
-| Cancelar una escuela ya creada (antes no existía) | Hueco funcional | ❓P56 |
+| Quién ve y corrige el contacto de emergencia (tutor; también la administración) | — | V (P52, 18/11) |
+| Reservas pendientes en las sesiones de una escuela nueva | — | V (P55, 18/11) |
+| Sesiones que coinciden con bloqueos que no son festivos (docencia, eventos) | — | V (P54, 18/11) |
+| Cancelar una escuela ya creada (antes no existía) | Hueco funcional | V (P56, 18/11) |
 
 ## 6. Resultado
 

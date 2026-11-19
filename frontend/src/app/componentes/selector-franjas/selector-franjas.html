@@ -1,0 +1,37 @@
+<ul class="leyenda" aria-label="Leyenda de estados">
+  @for (l of leyenda; track l.clase) {
+    <li><i class="punto {{ l.clase }}" aria-hidden="true"></i>{{ l.texto }}</li>
+  }
+</ul>
+
+<div class="zona" [class.recargando]="cargando()">
+  @if (cargando()) {
+    <span class="linea-carga" aria-hidden="true"></span>
+  }
+
+  @for (g of grupos(); track g.clave) {
+    <section class="grupo" [attr.aria-labelledby]="'grupo-' + g.clave">
+      <header>
+        <span class="icono-grupo {{ g.clave }}" aria-hidden="true"><mat-icon>{{ g.icono }}</mat-icon></span>
+        <h3 [id]="'grupo-' + g.clave">{{ g.titulo }}</h3>
+        <span class="cuenta" [class.cero]="g.libres === 0">{{ g.libres }} {{ g.libres === 1 ? 'libre' : 'libres' }}</span>
+      </header>
+
+      <div class="franjas" role="group" [attr.aria-label]="'Franjas de ' + g.titulo.toLowerCase()">
+        @for (f of g.franjas; track f.horaInicio; let i = $index) {
+          <button type="button" class="franja {{ f.estado.toLowerCase() }}"
+                  [class.elegida]="elegida() === f.horaInicio"
+                  [class.cerrado]="f.motivo === 'CIERRE'"
+                  [disabled]="!seleccionable(f)" (click)="pulsar(f)"
+                  [attr.aria-pressed]="f.estado === 'LIBRE' ? elegida() === f.horaInicio : null"
+                  [attr.aria-label]="horaCorta(f.horaInicio) + ' a ' + horaCorta(f.horaFin) + ', ' + etiqueta(f)"
+                  [style.animation-delay.ms]="i * 25">
+            <span class="hora">{{ horaCorta(f.horaInicio) }}–{{ horaCorta(f.horaFin) }}</span>
+            <span class="estado">{{ etiqueta(f) }}</span>
+            <mat-icon class="icono-estado" aria-hidden="true">{{ icono(f) }}</mat-icon>
+          </button>
+        }
+      </div>
+    </section>
+  }
+</div>

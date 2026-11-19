@@ -1,14 +1,118 @@
 @use '@angular/material' as mat;
 
+/* ===================================================================================
+   SAD-UAL · Identidad visual "Sporty + Institucional UAL"
+   - Marino institucional (#003366 / #0A2540): jerarquía, navegación, textos de marca.
+   - Naranja sol de Almería (#FF6B35) y ámbar (#F59E0B): CTA, badges deportivos.
+   - Pizarra (#F8FAFC / #0F172A): superficies limpias y tipografía de alto contraste.
+   - Semántica: esmeralda = libre, coral = ocupado, púrpura = escuelas/infantil.
+   =================================================================================== */
+
+:root {
+  /* Marca */
+  --sad-marino: #003366;
+  --sad-marino-profundo: #0a2540;
+  --sad-marino-claro: #1d4f86;
+  --sad-naranja: #ff6b35;
+  --sad-naranja-oscuro: #e5531f;
+  --sad-ambar: #f59e0b;
+
+  /* Superficies y tinta */
+  --sad-fondo: #f8fafc;
+  --sad-superficie: #ffffff;
+  --sad-superficie-2: #f1f5f9;
+  --sad-borde: #e2e8f0;
+  --sad-tinta: #0f172a;
+  --sad-tinta-2: #475569;
+  --sad-tinta-3: #94a3b8;
+
+  /* Semántica */
+  --sad-libre: #10b981;
+  --sad-libre-suave: #d1fae5;
+  --sad-libre-texto: #065f46;
+  --sad-ocupado: #ef4444;
+  --sad-ocupado-suave: #fee2e2;
+  --sad-ocupado-texto: #991b1b;
+  --sad-aviso-suave: #fef3c7;
+  --sad-aviso-texto: #92400e;
+  --sad-escuelas: #8b5cf6;
+  --sad-escuelas-suave: #ede9fe;
+
+  /* Degradados */
+  --sad-grad-marca: linear-gradient(135deg, #0a2540 0%, #003366 55%, #1d4f86 100%);
+  --sad-grad-sport: linear-gradient(135deg, #ff6b35 0%, #f59e0b 100%);
+  --sad-grad-libre: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+  --sad-grad-foto: linear-gradient(180deg, rgba(10, 37, 64, 0) 25%, rgba(10, 37, 64, .88) 100%);
+
+  /* Forma y profundidad */
+  --sad-radio-s: 10px;
+  --sad-radio-m: 16px;
+  --sad-radio-l: 24px;
+  --sad-sombra-1: 0 1px 2px rgba(15, 23, 42, .06), 0 1px 3px rgba(15, 23, 42, .08);
+  --sad-sombra-2: 0 4px 6px -1px rgba(15, 23, 42, .08), 0 10px 24px -6px rgba(15, 23, 42, .14);
+  --sad-sombra-3: 0 20px 40px -12px rgba(10, 37, 64, .35);
+  --sad-sombra-cta: 0 8px 20px -6px rgba(255, 107, 53, .55);
+  --sad-transicion: 180ms cubic-bezier(.2, .8, .2, 1);
+
+  /* Cristal */
+  --sad-cristal: rgba(255, 255, 255, .18);
+  --sad-cristal-borde: rgba(255, 255, 255, .32);
+}
+
 html {
   color-scheme: light;
   @include mat.theme((
     color: (
-      primary: mat.$azure-palette,
-      tertiary: mat.$blue-palette,
+      primary: mat.$blue-palette,
+      tertiary: mat.$orange-palette,
     ),
     typography: 'Inter Variable',
     density: 0,
+  ));
+
+  /* Material 3: los roles de color del sistema apuntan a la paleta SAD-UAL. */
+  @include mat.theme-overrides((
+    primary: #003366,
+    on-primary: #ffffff,
+    primary-container: #d6e4f5,
+    on-primary-container: #0a2540,
+    secondary: #1d4f86,
+    on-secondary: #ffffff,
+    secondary-container: #e2ecf8,
+    on-secondary-container: #0a2540,
+    tertiary: #ff6b35,
+    on-tertiary: #ffffff,
+    tertiary-container: #ffe3d6,
+    on-tertiary-container: #7a2405,
+    error: #dc2626,
+    error-container: #fee2e2,
+    on-error-container: #991b1b,
+    surface: #ffffff,
+    on-surface: #0f172a,
+    on-surface-variant: #475569,
+    surface-container-lowest: #ffffff,
+    surface-container-low: #f8fafc,
+    surface-container: #f1f5f9,
+    surface-container-high: #e2e8f0,
+    surface-container-highest: #cbd5e1,
+    outline: #94a3b8,
+    outline-variant: #e2e8f0,
+    inverse-surface: #0a2540,
+    inverse-on-surface: #f8fafc,
+    inverse-primary: #ffb59a,
+    corner-full: 999px,
+  ));
+
+  /* Botones rellenos más deportivos: esquinas redondas y peso tipográfico alto. */
+  @include mat.button-overrides((
+    filled-container-shape: 999px,
+    outlined-container-shape: 999px,
+    text-container-shape: 999px,
+    filled-label-text-weight: 700,
+    outlined-label-text-weight: 600,
+  ));
+  @include mat.form-field-overrides((
+    outlined-container-shape: 12px,
   ));
 }
 
@@ -17,39 +121,84 @@ html, body { height: 100%; }
 body {
   margin: 0;
   font-family: 'Inter Variable', Roboto, 'Helvetica Neue', sans-serif;
-  background: var(--mat-sys-surface-container-low);
-  color: var(--mat-sys-on-surface);
+  background: var(--sad-fondo);
+  color: var(--sad-tinta);
+  -webkit-font-smoothing: antialiased;
 }
+
+::selection { background: var(--sad-naranja); color: #fff; }
+
+:focus-visible { outline: 3px solid var(--sad-ambar); outline-offset: 2px; }
+
+/* CTA naranja: botón de acción principal de cualquier pantalla. */
+.cta.mat-mdc-unelevated-button:not(:disabled),
+.cta.mat-mdc-raised-button:not(:disabled) {
+  background: var(--sad-grad-sport);
+  color: #fff;
+  box-shadow: var(--sad-sombra-cta);
+  transition: transform var(--sad-transicion), box-shadow var(--sad-transicion);
+}
+.cta.mat-mdc-unelevated-button:not(:disabled):hover { transform: translateY(-2px); }
 
 /* ===================================================================================
    Piezas comunes de las pantallas del Incremento 2 y del panel de administración.
+   (Mismas clases que antes: el resto de pantallas hereda el nuevo estilo sin tocarse.)
    =================================================================================== */
-.pagina-ancha { max-width: 1100px; margin: 0 auto; }
-.pagina-media { max-width: 860px; margin: 0 auto; }
-.titulo-pagina { font: var(--mat-sys-headline-small); margin: 0 0 4px; }
-.subtitulo { color: var(--mat-sys-on-surface-variant); margin: 0 0 16px; }
-.seccion { font: var(--mat-sys-title-medium); margin: 24px 0 8px; }
+.pagina-ancha { max-width: 1160px; margin: 0 auto; }
+.pagina-media { max-width: 880px; margin: 0 auto; }
+.titulo-pagina {
+  font: 800 1.75rem/1.2 'Inter Variable', sans-serif;
+  letter-spacing: -.02em;
+  color: var(--sad-marino-profundo);
+  margin: 0 0 4px;
+}
+.subtitulo { color: var(--sad-tinta-2); margin: 0 0 20px; }
+.seccion {
+  font: 700 1.05rem/1.3 'Inter Variable', sans-serif;
+  color: var(--sad-marino-profundo);
+  margin: 28px 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.seccion::before {
+  content: '';
+  width: 4px;
+  height: 18px;
+  border-radius: 2px;
+  background: var(--sad-grad-sport);
+}
 
 .tarjeta {
-  background: var(--mat-sys-surface);
-  border-radius: 16px;
-  padding: 16px;
-  margin-bottom: 12px;
+  background: var(--sad-superficie);
+  border: 1px solid var(--sad-borde);
+  border-radius: var(--sad-radio-m);
+  padding: 18px;
+  margin-bottom: 14px;
+  box-shadow: var(--sad-sombra-1);
+  transition: box-shadow var(--sad-transicion), transform var(--sad-transicion);
 }
-.tarjeta h3 { font: var(--mat-sys-title-small); margin: 0 0 4px; }
-.meta { color: var(--mat-sys-on-surface-variant); font: var(--mat-sys-body-small); }
+.tarjeta:hover { box-shadow: var(--sad-sombra-2); }
+.tarjeta h3 { font: 700 1rem/1.3 'Inter Variable', sans-serif; margin: 0 0 4px; color: var(--sad-marino-profundo); }
+.meta { color: var(--sad-tinta-2); font: var(--mat-sys-body-small); }
 
 .aviso {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  border-radius: 12px;
-  margin: 8px 0 12px;
-  background: var(--mat-sys-secondary-container);
-  color: var(--mat-sys-on-secondary-container);
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  margin: 8px 0 14px;
+  background: var(--sad-libre-suave);
+  color: var(--sad-libre-texto);
+  border: 1px solid color-mix(in srgb, var(--sad-libre) 30%, transparent);
+  animation: sad-entrada 260ms ease-out both;
 }
-.aviso.error { background: var(--mat-sys-error-container); color: var(--mat-sys-on-error-container); }
+.aviso.error {
+  background: var(--sad-ocupado-suave);
+  color: var(--sad-ocupado-texto);
+  border-color: color-mix(in srgb, var(--sad-ocupado) 30%, transparent);
+}
 
 .rejilla-form {
   display: grid;
@@ -60,42 +209,134 @@ body {
 .rejilla-form .completo { grid-column: 1 / -1; }
 .fila-acciones { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: flex-end; }
 
-.tabla-envoltorio { overflow-x: auto; background: var(--mat-sys-surface); border-radius: 16px; }
+.tabla-envoltorio {
+  overflow-x: auto;
+  background: var(--sad-superficie);
+  border: 1px solid var(--sad-borde);
+  border-radius: var(--sad-radio-m);
+  box-shadow: var(--sad-sombra-1);
+}
 table.tabla { width: 100%; border-collapse: collapse; font: var(--mat-sys-body-medium); }
 table.tabla th {
   text-align: left;
-  font: var(--mat-sys-label-large);
-  color: var(--mat-sys-on-surface-variant);
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--mat-sys-outline-variant);
+  font: 600 .75rem/1.2 'Inter Variable', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--sad-tinta-2);
+  background: var(--sad-fondo);
+  padding: 12px;
+  border-bottom: 1px solid var(--sad-borde);
   white-space: nowrap;
 }
-table.tabla td { padding: 8px 12px; border-bottom: 1px solid var(--mat-sys-surface-container-high); vertical-align: middle; }
+table.tabla td { padding: 10px 12px; border-bottom: 1px solid var(--sad-superficie-2); vertical-align: middle; }
+table.tabla tbody tr { transition: background var(--sad-transicion); }
+table.tabla tbody tr:hover { background: var(--sad-fondo); }
 table.tabla tr:last-child td { border-bottom: 0; }
 table.tabla td.acciones { white-space: nowrap; text-align: right; }
-.vacio { color: var(--mat-sys-on-surface-variant); padding: 12px; }
+.vacio { color: var(--sad-tinta-2); padding: 12px; }
 
 .chip {
-  display: inline-block;
-  padding: 2px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
   border-radius: 999px;
-  font: var(--mat-sys-label-small);
-  background: var(--mat-sys-surface-container-high);
-  color: var(--mat-sys-on-surface-variant);
+  font: 600 .72rem/1.4 'Inter Variable', sans-serif;
+  background: var(--sad-superficie-2);
+  color: var(--sad-tinta-2);
 }
-.chip.ok { background: #d7f5dd; color: #0f5223; }
-.chip.pendiente { background: #fff1c2; color: #6b4e00; }
-.chip.mal { background: var(--mat-sys-error-container); color: var(--mat-sys-on-error-container); }
+.chip.ok { background: var(--sad-libre-suave); color: var(--sad-libre-texto); }
+.chip.pendiente { background: var(--sad-aviso-suave); color: var(--sad-aviso-texto); }
+.chip.mal { background: var(--sad-ocupado-suave); color: var(--sad-ocupado-texto); }
+.chip.escuela { background: var(--sad-escuelas-suave); color: #5b21b6; }
 
-.barra-porcentaje { height: 8px; border-radius: 4px; background: var(--mat-sys-surface-container-high); min-width: 80px; }
-.barra-porcentaje > span { display: block; height: 100%; border-radius: 4px; background: var(--mat-sys-primary); }
+.barra-porcentaje { height: 8px; border-radius: 999px; background: var(--sad-superficie-2); min-width: 80px; overflow: hidden; }
+.barra-porcentaje > span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--sad-marino) 0%, var(--sad-naranja) 100%);
+  transition: width 600ms cubic-bezier(.2, .8, .2, 1);
+}
 
-.pestanas { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 16px; }
+.pestanas {
+  display: flex;
+  gap: 4px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  margin-bottom: 20px;
+  padding: 4px;
+  background: var(--sad-superficie);
+  border: 1px solid var(--sad-borde);
+  border-radius: 999px;
+  scrollbar-width: none;
+}
 .pestanas a {
-  padding: 8px 14px;
+  padding: 8px 16px;
   border-radius: 999px;
   text-decoration: none;
-  color: var(--mat-sys-on-surface-variant);
-  font: var(--mat-sys-label-large);
+  white-space: nowrap;
+  color: var(--sad-tinta-2);
+  font: 600 .875rem/1.2 'Inter Variable', sans-serif;
+  transition: background var(--sad-transicion), color var(--sad-transicion);
 }
-.pestanas a.activa { background: var(--mat-sys-secondary-container); color: var(--mat-sys-on-secondary-container); }
+.pestanas a:hover { background: var(--sad-superficie-2); color: var(--sad-marino); }
+.pestanas a.activa { background: var(--sad-marino); color: #fff; box-shadow: var(--sad-sombra-1); }
+
+/* ===================================================================================
+   Utilidades de diseño: skeletons, estados vacíos, cristal y animaciones.
+   =================================================================================== */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--sad-superficie-2);
+  border-radius: var(--sad-radio-s);
+}
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .7), transparent);
+  animation: sad-brillo 1.3s infinite;
+}
+
+.estado-vacio {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  text-align: center;
+  padding: 40px 16px;
+  color: var(--sad-tinta-2);
+}
+.estado-vacio .icono-vacio {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--sad-superficie-2), #fff);
+  box-shadow: inset 0 0 0 1px var(--sad-borde), var(--sad-sombra-1);
+  color: var(--sad-naranja);
+  margin-bottom: 6px;
+  animation: sad-flotar 3s ease-in-out infinite;
+}
+.estado-vacio .icono-vacio mat-icon { font-size: 34px; width: 34px; height: 34px; }
+.estado-vacio strong { color: var(--sad-marino-profundo); font-size: 1.05rem; }
+.estado-vacio p { margin: 0; max-width: 340px; }
+
+.cristal {
+  background: var(--sad-cristal);
+  border: 1px solid var(--sad-cristal-borde);
+  backdrop-filter: blur(8px) saturate(140%);
+  -webkit-backdrop-filter: blur(8px) saturate(140%);
+  color: #fff;
+}
+
+@keyframes sad-brillo { to { transform: translateX(100%); } }
+@keyframes sad-entrada { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes sad-flotar { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
+}

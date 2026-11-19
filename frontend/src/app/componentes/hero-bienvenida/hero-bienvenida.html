@@ -1,0 +1,38 @@
+<section class="hero" aria-labelledby="titulo-hero">
+  <img class="fondo" [src]="foto" alt="" aria-hidden="true" />
+  <span class="sol" aria-hidden="true"></span>
+
+  <div class="texto">
+    <span class="perfil cristal"><mat-icon aria-hidden="true">verified</mat-icon>{{ etiquetaPerfil() }}</span>
+    <h1 id="titulo-hero">{{ saludo() }}, <span class="nombre">{{ usuario().nombre }}</span></h1>
+    <p>{{ lema() }}</p>
+
+    <div class="cifras">
+      <span class="cifra cristal">
+        <strong>{{ instalaciones() }}</strong>
+        <small>instalaciones</small>
+      </span>
+      <span class="cifra cristal">
+        @if (libresHoy() === null) {
+          <span class="skeleton cifra-esqueleto" aria-hidden="true"></span>
+        } @else {
+          <strong>{{ libresHoy() }}</strong>
+        }
+        <small>franjas libres hoy</small>
+      </span>
+    </div>
+  </div>
+
+  <nav class="accesos" aria-label="Accesos rápidos">
+    @for (a of accesos(); track a.ruta + a.texto; let i = $index) {
+      <a class="acceso {{ a.tono }}" [routerLink]="a.ruta" [fragment]="a.fragmento" [style.animation-delay.ms]="120 + i * 70">
+        <span class="icono"><mat-icon aria-hidden="true">{{ a.icono }}</mat-icon></span>
+        <span class="acceso-texto">
+          <strong>{{ a.texto }}</strong>
+          <small>{{ a.detalle }}</small>
+        </span>
+        <mat-icon class="flecha" aria-hidden="true">arrow_forward</mat-icon>
+      </a>
+    }
+  </nav>
+</section>

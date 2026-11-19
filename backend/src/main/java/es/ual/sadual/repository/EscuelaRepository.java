@@ -115,7 +115,7 @@ public class EscuelaRepository {
         return jdbc.query("""
                 SELECT m.id_menor, m.nombre || ' ' || m.apellidos AS menor, m.fecha_nacimiento,
                        t.nombre || ' ' || t.apellidos AS tutor, t.email, m.telefono_tutor AS telefono,
-                       ie.fecha_inscripcion, ie.estado
+                       m.contacto_emergencia_nombre, m.contacto_emergencia_telefono, ie.fecha_inscripcion, ie.estado
                   FROM inscripcion_escuela ie
                   JOIN menor m   ON m.id_menor   = ie.id_menor
                   JOIN usuario t ON t.id_usuario = m.id_tutor
@@ -123,7 +123,8 @@ public class EscuelaRepository {
                  ORDER BY ie.estado, m.apellidos, m.nombre
                 """, (rs, n) -> new InscritoEscuelaDto(rs.getInt("id_menor"), rs.getString("menor"),
                 rs.getObject("fecha_nacimiento", LocalDate.class), rs.getString("tutor"), rs.getString("email"),
-                rs.getString("telefono"), rs.getObject("fecha_inscripcion", LocalDateTime.class),
+                rs.getString("telefono"), rs.getString("contacto_emergencia_nombre"),
+                rs.getString("contacto_emergencia_telefono"), rs.getObject("fecha_inscripcion", LocalDateTime.class),
                 rs.getString("estado")), idEscuela);
     }
 
@@ -208,7 +209,7 @@ public class EscuelaRepository {
         return bajas;
     }
 
-    /** ❓P52 · El tutor corrige los datos de contacto del menor. */
+    /** P52 · El tutor corrige los datos de contacto del menor. */
     public void actualizarContacto(Integer idMenor, String telefonoTutor, String emergenciaNombre,
                                    String emergenciaTelefono) {
         jdbc.update("""

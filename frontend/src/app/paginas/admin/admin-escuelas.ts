@@ -19,7 +19,7 @@ function escuelaVacia() {
     horario: [{ diaSemana: 1, horaInicio: '17:00', horaFin: '18:00' }] as SesionEscuela[] };
 }
 
-/** P19 · Escuelas con horario semanal fijo que bloquea la instalación toda la temporada; P20 · inscritos. */
+/** P19 · Escuelas con horario semanal fijo que bloquea la instalación toda la temporada; P20 · inscritos, con el contacto de emergencia (P52). */
 @Component({
   selector: 'app-admin-escuelas',
   imports: [FormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressBarModule,
@@ -124,15 +124,16 @@ function escuelaVacia() {
         @if (inscritosDe() === e.id) {
           <div class="tabla-envoltorio">
             <table class="tabla">
-              <thead><tr><th>Menor</th><th>Nacimiento</th><th>Tutor</th><th>Contacto</th><th>Estado</th></tr></thead>
+              <thead><tr><th>Menor</th><th>Nacimiento</th><th>Tutor</th><th>Contacto del tutor</th><th>Contacto de emergencia</th><th>Estado</th></tr></thead>
               <tbody>
                 @for (i of inscritos(); track i.idMenor) {
                   <tr>
                     <td>{{ i.menor }}</td><td>{{ fechaLegible(i.fechaNacimiento) }}</td><td>{{ i.tutor }}</td>
-                    <td>{{ i.emailTutor }}@if (i.telefonoTutor) {<br />{{ i.telefonoTutor }}}</td><td>{{ i.estado }}</td>
+                    <td>{{ i.emailTutor }}@if (i.telefonoTutor) {<br />{{ i.telefonoTutor }}}</td>
+                    <td>{{ i.contactoEmergenciaNombre }}<br />{{ i.contactoEmergenciaTelefono }}</td><td>{{ i.estado }}</td>
                   </tr>
                 } @empty {
-                  <tr><td colspan="5" class="vacio">Sin inscritos.</td></tr>
+                  <tr><td colspan="6" class="vacio">Sin inscritos.</td></tr>
                 }
               </tbody>
             </table>

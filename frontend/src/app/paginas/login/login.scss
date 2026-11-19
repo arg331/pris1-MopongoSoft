@@ -1,68 +1,122 @@
+/* Compartido por login y registro: foto deportiva a pantalla completa con tarjeta de cristal. */
 .login {
+  position: relative;
+  isolation: isolate;
   min-height: 100dvh;
   display: grid;
   place-items: center;
-  padding: 16px;
+  padding: 24px 16px;
+  box-sizing: border-box;
+  overflow: hidden;
   background:
-    radial-gradient(circle at 20% 10%, color-mix(in srgb, var(--mat-sys-primary) 18%, transparent), transparent 45%),
-    var(--mat-sys-surface-container-low);
+    linear-gradient(120deg, rgba(10, 37, 64, .94) 0%, rgba(0, 51, 102, .78) 50%, rgba(255, 107, 53, .45) 100%),
+    url('https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1920&q=70') center / cover,
+    var(--sad-marino-profundo);
+}
+.login::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  width: 520px;
+  height: 520px;
+  right: -180px;
+  top: -200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 107, 53, .6), transparent 65%);
+  animation: sad-flotar 8s ease-in-out infinite;
+}
+.login::after {
+  content: 'SAD-UAL · Servicio de Deportes · Universidad de Almería';
+  position: absolute;
+  left: 24px;
+  bottom: 18px;
+  color: rgba(255, 255, 255, .7);
+  font: 600 .75rem/1 'Inter Variable', sans-serif;
+  letter-spacing: .06em;
+  text-transform: uppercase;
 }
 
 .tarjeta {
-  width: min(420px, 100%);
-  background: var(--mat-sys-surface);
-  border-radius: 20px;
-  padding: 32px 28px 24px;
-  box-shadow: var(--mat-sys-level2);
+  width: min(440px, 100%);
+  background: rgba(255, 255, 255, .96);
+  border: 1px solid rgba(255, 255, 255, .6);
+  border-radius: 28px;
+  padding: 34px 30px 26px;
+  box-sizing: border-box;
+  box-shadow: 0 30px 60px -20px rgba(0, 0, 0, .55);
+  backdrop-filter: blur(12px);
+  animation: sad-entrada 420ms ease-out both;
 }
 
-header { text-align: center; margin-bottom: 20px; }
-header h1 { font: var(--mat-sys-headline-small); margin: 12px 0 4px; }
-header p { margin: 0; color: var(--mat-sys-on-surface-variant); }
+header { text-align: center; margin-bottom: 22px; }
+header h1 {
+  font: 800 1.55rem/1.15 'Inter Variable', sans-serif;
+  letter-spacing: -.02em;
+  color: var(--sad-marino-profundo);
+  margin: 14px 0 6px;
+}
+header p { margin: 0; color: var(--sad-tinta-2); font-size: .92rem; }
 
 .marca {
   display: inline-grid;
   place-items: center;
-  width: 56px;
-  height: 56px;
-  border-radius: 16px;
-  background: var(--mat-sys-primary-container);
-  color: var(--mat-sys-on-primary-container);
+  width: 60px;
+  height: 60px;
+  border-radius: 18px;
+  background: var(--sad-grad-sport);
+  color: #fff;
+  box-shadow: var(--sad-sombra-cta);
+  transform: rotate(-6deg);
 }
+.marca mat-icon { font-size: 30px; width: 30px; height: 30px; }
 
 form { display: flex; flex-direction: column; gap: 4px; }
-.entrar { height: 48px; margin-top: 8px; }
+.entrar {
+  height: 50px;
+  margin-top: 8px;
+  font-size: 1rem;
+  --mat-button-filled-container-color: var(--sad-naranja);
+}
+.entrar:not(:disabled) { background: var(--sad-grad-sport); box-shadow: var(--sad-sombra-cta); }
 .entrar mat-spinner { margin: 0 auto; }
 
 .aviso {
   margin: 0 0 16px;
   padding: 10px 12px;
-  border-radius: 10px;
-  background: var(--mat-sys-secondary-container);
-  color: var(--mat-sys-on-secondary-container);
+  border-radius: 12px;
+  background: var(--sad-aviso-suave);
+  color: var(--sad-aviso-texto);
 }
-.aviso.error { background: var(--mat-sys-error-container); color: var(--mat-sys-on-error-container); }
+.aviso.error { background: var(--sad-ocupado-suave); color: var(--sad-ocupado-texto); }
 
 .demo {
-  margin-top: 20px;
+  margin-top: 22px;
   padding-top: 16px;
-  border-top: 1px solid var(--mat-sys-outline-variant);
+  border-top: 1px dashed var(--sad-borde);
   font: var(--mat-sys-body-small);
-  color: var(--mat-sys-on-surface-variant);
+  color: var(--sad-tinta-2);
 }
-.demo p { margin: 0 0 8px; }
+.demo p { margin: 0 0 10px; }
+.demo code { background: var(--sad-superficie-2); padding: 1px 6px; border-radius: 6px; color: var(--sad-marino); }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .chips button {
-  border: 1px solid var(--mat-sys-outline-variant);
-  background: transparent;
-  color: var(--mat-sys-on-surface);
+  border: 1px solid var(--sad-borde);
+  background: var(--sad-superficie);
+  color: var(--sad-marino);
   border-radius: 999px;
-  padding: 4px 12px;
-  font: inherit;
+  padding: 6px 12px;
+  font: 600 .78rem/1 'Inter Variable', sans-serif;
   cursor: pointer;
+  transition: all var(--sad-transicion);
 }
-.chips button:hover { background: var(--mat-sys-surface-container-high); }
+.chips button:hover { background: var(--sad-marino); color: #fff; transform: translateY(-2px); }
 
-.pie { margin: 16px 0 0; text-align: center; font: var(--mat-sys-body-small); color: var(--mat-sys-on-surface-variant); }
+.pie { margin: 18px 0 0; text-align: center; font: var(--mat-sys-body-small); color: var(--sad-tinta-2); }
+.pie a { color: var(--sad-naranja-oscuro); font-weight: 700; }
 .tipo { margin-bottom: 12px; width: 100%; }
 .tipo mat-button-toggle { flex: 1; }
+
+@media (max-width: 520px) {
+  .tarjeta { padding: 26px 20px 20px; border-radius: 22px; }
+  .login::after { display: none; }
+}
