@@ -1,0 +1,139 @@
+:host { display: block; }
+
+/* ---------- Leyenda ---------- */
+.leyenda {
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  font: 600 .75rem/1 'Inter Variable', sans-serif;
+  color: var(--sad-tinta-2);
+}
+.leyenda li { display: inline-flex; align-items: center; gap: 6px; }
+.punto { width: 10px; height: 10px; border-radius: 50%; }
+.punto.libre { background: var(--sad-libre); }
+.punto.reservada { background: var(--sad-ocupado); }
+.punto.bloqueada { background: repeating-linear-gradient(45deg, #64748b 0 2px, #cbd5e1 2px 4px); }
+.punto.fuera_de_plazo { background: var(--sad-ambar); }
+
+/* ---------- Zona y carga ---------- */
+.zona { position: relative; display: grid; gap: 18px; transition: opacity var(--sad-transicion); }
+.zona.recargando .franjas { opacity: .45; pointer-events: none; }
+.linea-carga {
+  position: absolute;
+  top: -8px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--sad-superficie-2);
+}
+.linea-carga::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  border-radius: inherit;
+  background: var(--sad-grad-sport);
+  animation: barrido 1s ease-in-out infinite;
+}
+
+/* ---------- Grupos mañana / tarde ---------- */
+.grupo header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.grupo h3 { margin: 0; font: 700 .95rem/1 'Inter Variable', sans-serif; color: var(--sad-marino-profundo); flex: 1; }
+.icono-grupo {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+}
+.icono-grupo mat-icon { font-size: 18px; width: 18px; height: 18px; }
+.icono-grupo.manana { background: #fef3c7; color: #d97706; }
+.icono-grupo.tarde { background: #ffe4e6; color: #e11d48; }
+.cuenta {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font: 700 .72rem/1 'Inter Variable', sans-serif;
+  background: var(--sad-libre-suave);
+  color: var(--sad-libre-texto);
+}
+.cuenta.cero { background: var(--sad-superficie-2); color: var(--sad-tinta-3); }
+
+/* ---------- Cápsulas ---------- */
+.franjas { display: grid; grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); gap: 10px; transition: opacity var(--sad-transicion); }
+
+.franja {
+  position: relative;
+  display: grid;
+  gap: 3px;
+  padding: 11px 28px 11px 12px;
+  border-radius: 16px;
+  border: 1.5px solid transparent;
+  font: inherit;
+  text-align: left;
+  animation: sad-entrada 280ms ease-out both;
+  transition: transform var(--sad-transicion), box-shadow var(--sad-transicion), background var(--sad-transicion),
+    color var(--sad-transicion), border-color var(--sad-transicion);
+}
+.hora { font: 800 .9rem/1.1 'Inter Variable', sans-serif; letter-spacing: -.01em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.estado { font: 600 .7rem/1.2 'Inter Variable', sans-serif; opacity: .85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.icono-estado { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 18px; width: 18px; height: 18px; opacity: .8; }
+
+/* Libre */
+.franja.libre {
+  background: var(--sad-libre-suave);
+  color: var(--sad-libre-texto);
+  border-color: color-mix(in srgb, var(--sad-libre) 35%, transparent);
+  cursor: pointer;
+}
+.franja.libre:not(:disabled):hover {
+  transform: translateY(-2px);
+  border-color: var(--sad-libre);
+  box-shadow: 0 8px 18px -8px rgba(16, 185, 129, .6);
+}
+.franja.libre:not(:disabled):active { transform: translateY(0) scale(.98); }
+.franja.libre:disabled { cursor: not-allowed; opacity: .6; }
+
+/* Elegida */
+.franja.elegida,
+.franja.elegida:not(:disabled):hover {
+  background: var(--sad-grad-sport);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: var(--sad-sombra-cta);
+  transform: translateY(-2px);
+}
+.franja.elegida .icono-estado { opacity: 1; animation: pop 260ms cubic-bezier(.2, 1.6, .4, 1) both; }
+
+/* Ocupada */
+.franja.reservada {
+  background: var(--sad-ocupado-suave);
+  color: var(--sad-ocupado-texto);
+  border-color: color-mix(in srgb, var(--sad-ocupado) 20%, transparent);
+}
+.franja.reservada .hora { text-decoration: line-through; text-decoration-thickness: 1.5px; }
+
+/* Bloqueada (rayado) y cerrada */
+.franja.bloqueada {
+  background: repeating-linear-gradient(-45deg, #f1f5f9 0 8px, #e2e8f0 8px 16px);
+  color: #475569;
+  border-color: #cbd5e1;
+}
+.franja.bloqueada.cerrado { background: #0f172a; color: #e2e8f0; border-color: #0f172a; }
+
+/* Fuera de plazo (P2: antelación mínima) */
+.franja.fuera_de_plazo {
+  background: var(--sad-aviso-suave);
+  color: var(--sad-aviso-texto);
+  border: 1.5px dashed color-mix(in srgb, var(--sad-ambar) 60%, transparent);
+}
+
+/* Pasada */
+.franja.pasada { background: var(--sad-superficie-2); color: var(--sad-tinta-3); }
+
+@keyframes barrido { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+@keyframes pop { from { transform: translateY(-50%) scale(0); } to { transform: translateY(-50%) scale(1); } }

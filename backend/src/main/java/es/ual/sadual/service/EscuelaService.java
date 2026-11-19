@@ -165,7 +165,7 @@ public class EscuelaService {
         return menor(idTutor, idMenor);
     }
 
-    /** ❓P52 · El tutor corrige el teléfono y el contacto de emergencia del menor. */
+    /** P52 · El tutor corrige el teléfono y el contacto de emergencia del menor. */
     @Transactional
     public MenorDto actualizarContacto(Integer idTutor, Integer idMenor, ContactoMenorRequest p) {
         menorDelTutor(idTutor, idMenor);

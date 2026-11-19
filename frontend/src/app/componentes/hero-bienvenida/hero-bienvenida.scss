@@ -1,0 +1,121 @@
+:host { display: block; }
+
+.hero {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: end;
+  padding: 30px;
+  border-radius: 28px;
+  overflow: hidden;
+  color: #fff;
+  background: var(--sad-grad-marca);
+  box-shadow: var(--sad-sombra-3);
+}
+.fondo {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: .5;
+  animation: ken-burns 22s ease-in-out infinite alternate;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(100deg, rgba(10, 37, 64, .96) 0%, rgba(0, 51, 102, .82) 45%, rgba(0, 51, 102, .35) 100%);
+}
+.sol {
+  position: absolute;
+  z-index: -1;
+  width: 340px;
+  height: 340px;
+  right: -90px;
+  top: -150px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 107, 53, .75) 0%, rgba(245, 158, 11, .25) 45%, transparent 70%);
+  filter: blur(6px);
+  animation: sad-flotar 7s ease-in-out infinite;
+}
+
+.texto { display: grid; gap: 10px; justify-items: start; animation: sad-entrada 420ms ease-out both; }
+.perfil {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font: 700 .72rem/1 'Inter Variable', sans-serif;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.perfil mat-icon { font-size: 16px; width: 16px; height: 16px; color: var(--sad-ambar); }
+h1 { margin: 4px 0 0; font: 800 clamp(1.6rem, 3.4vw, 2.4rem)/1.1 'Inter Variable', sans-serif; letter-spacing: -.03em; }
+.nombre {
+  background: var(--sad-grad-sport);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.texto p { margin: 0; max-width: 440px; font-size: 1rem; opacity: .86; }
+
+.cifras { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+.cifra { display: grid; padding: 10px 16px; border-radius: 16px; min-width: 110px; }
+.cifra strong { font: 800 1.6rem/1.1 'Inter Variable', sans-serif; font-variant-numeric: tabular-nums; }
+.cifra small { font-size: .72rem; opacity: .85; }
+.cifra-esqueleto { display: block; width: 44px; height: 26px; background: rgba(255, 255, 255, .2); }
+
+/* ---------- Accesos rápidos ---------- */
+.accesos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.acceso {
+  --tono: var(--sad-naranja);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 18px;
+  text-decoration: none;
+  color: var(--sad-tinta);
+  background: rgba(255, 255, 255, .94);
+  box-shadow: 0 10px 24px -14px rgba(0, 0, 0, .6);
+  animation: sad-entrada 420ms ease-out both;
+  transition: transform var(--sad-transicion), box-shadow var(--sad-transicion);
+}
+.acceso:hover { transform: translateY(-3px); box-shadow: 0 16px 30px -14px rgba(0, 0, 0, .7); }
+.acceso:hover .flecha { transform: translateX(3px); opacity: 1; }
+.acceso.marino { --tono: var(--sad-marino); }
+.acceso.verde { --tono: var(--sad-libre); }
+.acceso.purpura { --tono: var(--sad-escuelas); }
+.icono {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--tono) 14%, white);
+  color: var(--tono);
+}
+.acceso.naranja .icono { background: var(--sad-grad-sport); color: #fff; }
+.acceso-texto { display: grid; min-width: 0; flex: 1; line-height: 1.2; }
+.acceso-texto strong { font-size: .88rem; color: var(--sad-marino-profundo); }
+.acceso-texto small { font-size: .72rem; color: var(--sad-tinta-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.flecha { font-size: 18px; width: 18px; height: 18px; color: var(--tono); opacity: .5; transition: all var(--sad-transicion); }
+
+@media (max-width: 1100px) {
+  .hero { grid-template-columns: 1fr; padding: 22px; border-radius: 22px; }
+}
+@media (max-width: 480px) {
+  .accesos { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .acceso { padding: 10px; gap: 8px; }
+  .flecha, .acceso-texto small { display: none; }
+}
+
+@keyframes ken-burns { from { transform: scale(1); } to { transform: scale(1.12) translateX(-2%); } }

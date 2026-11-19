@@ -1,0 +1,76 @@
+<div class="herramientas">
+  <div class="filtro" role="group" aria-label="Filtrar por tipo">
+    <button type="button" class="pastilla" [class.activa]="filtroTipo() === null"
+            [attr.aria-pressed]="filtroTipo() === null" (click)="filtrar.emit(null)">Todas</button>
+    @for (tipo of tipos(); track tipo.id) {
+      <button type="button" class="pastilla" [class.activa]="filtroTipo() === tipo.id"
+              [attr.aria-pressed]="filtroTipo() === tipo.id" (click)="filtrar.emit(tipo.id)">
+        <mat-icon aria-hidden="true">{{ iconoTipo(tipo.nombre) }}</mat-icon>{{ tipo.nombre }}
+      </button>
+    }
+  </div>
+
+  <label class="buscador">
+    <mat-icon aria-hidden="true">search</mat-icon>
+    <input type="search" placeholder="Buscar pista, piscina, pabellón…" aria-label="Buscar instalación"
+           [value]="busqueda()" (input)="buscar($event)" />
+  </label>
+</div>
+
+@if (cargando()) {
+  <ul class="rejilla" role="list" aria-busy="true" aria-label="Cargando instalaciones">
+    @for (n of esqueletos; track n) {
+      <li class="tarjeta-esqueleto">
+        <div class="skeleton foto-esqueleto"></div>
+        <div class="skeleton linea" style="width: 70%"></div>
+        <div class="skeleton linea" style="width: 45%"></div>
+      </li>
+    }
+  </ul>
+} @else {
+  <ul class="rejilla" role="list">
+    @for (t of tarjetas(); track t.inst.id; let i = $index) {
+      <li [style.animation-delay.ms]="i * 50">
+        <button type="button" class="instalacion" [class.activa]="seleccionadaId() === t.inst.id"
+                [attr.aria-pressed]="seleccionadaId() === t.inst.id" (click)="seleccionar.emit(t.inst)"
+                [style.--acento]="t.acento">
+          <span class="foto">
+            @if (!fotosRotas().has(t.inst.id)) {
+              <img [src]="t.foto" alt="" loading="lazy" decoding="async" (error)="fotoRota(t.inst.id)" />
+            }
+            <span class="badge cristal tipo"><mat-icon aria-hidden="true">{{ t.icono }}</mat-icon>{{ t.inst.tipo }}</span>
+            @if (t.estado) {
+              <span class="badge cristal disp {{ t.estado }}"><i aria-hidden="true"></i>{{ t.textoEstado }}</span>
+            }
+            <span class="titulo-foto">
+              <span class="nombre">{{ t.inst.nombre }}</span>
+              <span class="ubicacion"><mat-icon aria-hidden="true">place</mat-icon>{{ t.inst.ubicacion }}</span>
+            </span>
+            @if (seleccionadaId() === t.inst.id) {
+              <span class="marca-elegida" aria-hidden="true"><mat-icon>check</mat-icon></span>
+            }
+          </span>
+
+          <span class="cuerpo">
+            <span class="datos">
+              <span class="dato"><mat-icon aria-hidden="true">groups</mat-icon>Aforo {{ t.inst.aforo }}</span>
+              <span class="dato"><mat-icon aria-hidden="true">timer</mat-icon>{{ t.inst.duracionFranjaMin }} min</span>
+            </span>
+            @if (t.resumen && !t.resumen.cerrada) {
+              <span class="ocupacion" [attr.aria-label]="t.resumen.libres + ' de ' + t.resumen.total + ' franjas libres hoy'">
+                <span class="barra"><span [style.width.%]="t.porcentajeLibre"></span></span>
+                <small>{{ t.resumen.libres }}/{{ t.resumen.total }}</small>
+              </span>
+            }
+          </span>
+        </button>
+      </li>
+    } @empty {
+      <li class="estado-vacio">
+        <span class="icono-vacio"><mat-icon>sports</mat-icon></span>
+        <strong>¡Sin pista a la vista!</strong>
+        <p>No hay instalaciones de este tipo{{ busqueda() ? ' con esa búsqueda' : '' }}. Prueba con otro deporte: siempre hay sitio para moverse.</p>
+      </li>
+    }
+  </ul>
+}

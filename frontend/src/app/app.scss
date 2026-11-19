@@ -1,36 +1,183 @@
-.barra {
-  position: sticky;
-  top: 0;
-  z-index: 10;
+$ancho-lateral: 248px;
+
+.armazon { min-height: 100vh; }
+
+/* ---------- Barra lateral (escritorio) ---------- */
+.lateral {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: $ancho-lateral;
+  z-index: 20;
   display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 8px 16px;
-  background: var(--mat-sys-primary);
-  color: var(--mat-sys-on-primary);
+  flex-direction: column;
+  gap: 24px;
+  padding: 20px 14px;
+  box-sizing: border-box;
+  background: var(--sad-grad-marca);
+  color: #fff;
+  overflow: hidden;
 }
+.lateral::after {
+  /* destello naranja: el sol de Almería */
+  content: '';
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  right: -140px;
+  bottom: -120px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 107, 53, .45), transparent 70%);
+  pointer-events: none;
+}
+
 .marca {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   color: inherit;
   text-decoration: none;
-  font: var(--mat-sys-title-medium);
 }
-nav { display: flex; gap: 4px; flex: 1; }
-nav a { --mat-button-text-label-text-color: var(--mat-sys-on-primary); }
-nav a.activo { background: color-mix(in srgb, var(--mat-sys-on-primary) 16%, transparent); }
-.usuario { display: flex; align-items: center; gap: 8px; }
-.usuario button { --mat-icon-button-icon-color: var(--mat-sys-on-primary); }
-.rol {
-  font: var(--mat-sys-label-small);
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--mat-sys-on-primary) 20%, transparent);
+.logo {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--sad-grad-sport);
+  box-shadow: var(--sad-sombra-cta);
+  color: #fff;
+  flex: none;
 }
-.contenido { padding: 24px 16px; max-width: 1200px; margin: 0 auto; }
+.marca-texto { display: grid; line-height: 1.15; }
+.marca-texto strong { font-size: 1.15rem; font-weight: 800; letter-spacing: -.01em; }
+.marca-texto small { font-size: .68rem; opacity: .7; }
 
-@media (max-width: 640px) {
-  .marca span, .texto, .nombre { display: none; }
-  .barra { gap: 8px; }
+.nav-lateral { display: grid; gap: 4px; flex: 1; align-content: start; }
+.nav-lateral a {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-radius: 12px;
+  color: rgba(255, 255, 255, .78);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: .92rem;
+  transition: background var(--sad-transicion), color var(--sad-transicion), transform var(--sad-transicion);
+}
+.nav-lateral a:hover { background: rgba(255, 255, 255, .08); color: #fff; transform: translateX(2px); }
+.nav-lateral a.activo { background: rgba(255, 255, 255, .14); color: #fff; }
+.nav-lateral a.activo::before {
+  content: '';
+  position: absolute;
+  left: -14px;
+  top: 10px;
+  bottom: 10px;
+  width: 4px;
+  border-radius: 0 4px 4px 0;
+  background: var(--sad-naranja);
+}
+.nav-lateral a.activo mat-icon { color: var(--sad-ambar); }
+
+.tarjeta-usuario {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .1);
+  border: 1px solid rgba(255, 255, 255, .14);
+  backdrop-filter: blur(8px);
+}
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--sad-marino);
+  font-weight: 800;
+  font-size: .85rem;
+  flex: none;
+}
+.datos { display: grid; min-width: 0; flex: 1; line-height: 1.2; }
+.datos strong { font-size: .9rem; }
+.datos small { font-size: .72rem; opacity: .75; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tarjeta-usuario button { --mat-icon-button-icon-color: #fff; }
+
+/* ---------- Contenido ---------- */
+.contenido {
+  margin-left: $ancho-lateral;
+  padding: 28px 32px 48px;
+  max-width: 1240px;
+  box-sizing: border-box;
+}
+
+/* ---------- Móvil ---------- */
+.cabecera-movil, .nav-inferior { display: none; }
+
+@media (max-width: 960px) {
+  .lateral { display: none; }
+
+  .cabecera-movil {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 8px 8px 14px;
+    background: var(--sad-grad-marca);
+    color: #fff;
+  }
+  .cabecera-movil .marca { flex: 1; }
+  .cabecera-movil .logo { width: 34px; height: 34px; border-radius: 10px; }
+  .cabecera-movil button { --mat-icon-button-icon-color: #fff; }
+  .rol {
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .16);
+  }
+
+  .contenido { margin-left: 0; padding: 16px 16px 112px; }
+
+  .nav-inferior {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    z-index: 30;
+    display: flex;
+    justify-content: space-around;
+    gap: 2px;
+    padding: 6px;
+    border-radius: 22px;
+    background: rgba(10, 37, 64, .88);
+    backdrop-filter: blur(14px) saturate(160%);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    box-shadow: var(--sad-sombra-3);
+  }
+  .nav-inferior a {
+    flex: 1;
+    min-width: 0;
+    display: grid;
+    justify-items: center;
+    gap: 2px;
+    padding: 7px 4px;
+    border-radius: 16px;
+    color: rgba(255, 255, 255, .7);
+    text-decoration: none;
+    font-size: .64rem;
+    font-weight: 600;
+    transition: background var(--sad-transicion), color var(--sad-transicion);
+  }
+  .nav-inferior a span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+  .nav-inferior a.activo { background: var(--sad-grad-sport); color: #fff; box-shadow: var(--sad-sombra-cta); }
 }

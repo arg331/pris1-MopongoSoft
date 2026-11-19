@@ -16,10 +16,15 @@ Responsable: María Camila Soto Zapata · Respaldo: Javier Zúñiga Carmona
 
 ```
 es.ual.sadual
-├── config/        SecurityConfig (JWT, CORS, BCrypt) · ClockConfig (reloj de negocio)
-├── controller/    AuthController, InstalacionController, ReservaController
-├── service/       AuthService, TokenService, InstalacionService, DisponibilidadService, ReservaService
-├── repository/    Spring Data JPA + FranjaRepository (JDBC sobre fn_franjas_disponibles)
+├── config/        SecurityConfig (JWT, CORS, BCrypt) · ClockConfig (reloj de negocio) · PoliticaReservas (P4/P17)
+├── controller/    Release V1: Auth, Instalacion, Reserva
+│                  Variación 7: ReservaInstitucional, Evento, Escuela
+│                  Administración (solo ADMIN): AdminInstalacion, AdminUsuario, AdminBloqueo, AdminReserva,
+│                  AdminReservaInstitucional, AdminEntidad, AdminEvento, AdminEscuela, AdminInforme
+├── service/       Reglas de negocio de cada controlador + TokenService, DisponibilidadService,
+│                  ConsultaReservasService e InformeService
+├── repository/    Spring Data JPA + repositorios JDBC (FranjaRepository sobre fn_franjas_disponibles,
+│                  eventos, escuelas, entidades, institucionales, panel e informes)
 ├── entity/        Rol, Usuario, TipoInstalacion, Instalacion, Reserva, EstadoReserva
 ├── dto/           Peticiones y respuestas de la API (records)
 └── exception/     Excepciones de negocio y GlobalExceptionHandler (RFC 7807)
@@ -46,8 +51,8 @@ Todas las rutas salvo el login exigen `Authorization: Bearer <token>`.
 ## Contrato de la API · Incremento 2 (Variación 7)
 
 `ReservaDto` añade `institucional` (boolean) y `motivoRechazo`. Los estados de reserva incluyen
-`RECHAZADA`. Las reglas P23–P46 las validó el cliente el 11/11/2026; las marcadas con ❓ (P47–P60)
-siguen pendientes (`docs/requisitos-cliente.md`).
+`RECHAZADA`. Todas las reglas están validadas por el cliente: P23–P46 el 11/11/2026 y P47–P60 el 18/11/2026
+(`docs/requisitos-cliente.md`).
 
 | Método | Ruta | Descripción | Req. |
 |---|---|---|---|
@@ -64,11 +69,12 @@ siguen pendientes (`docs/requisitos-cliente.md`).
 | GET | `/api/admin/eventos/{id}/inscritos` | ADMIN. Inscritos con su estado (`ACTIVA` / `ANULADA`) | P18 |
 | GET | `/api/escuelas` | Escuelas cuya temporada no ha terminado, con horario, tramo de edad y plazas libres | P19 |
 | GET / POST | `/api/menores` | Tutor: externo o miembro de la comunidad UAL (P39). Alta `{nombre, apellidos, fechaNacimiento, telefonoTutor, contactoEmergenciaNombre, contactoEmergenciaTelefono, consentimientoRgpd: true}` → 201 (P22, P44) | P22 |
+| PATCH | `/api/menores/{id}/contacto` | Tutor. `{telefonoTutor, contactoEmergenciaNombre, contactoEmergenciaTelefono}`: corrige el teléfono y el contacto de emergencia del menor (P44, P52) | P52 |
 | DELETE | `/api/menores/{id}` | Tutor. Retira el consentimiento: se eliminan los datos del menor y sus inscripciones (P45) → 204 | P45 |
 | POST | `/api/escuelas/{id}/inscripciones` | Tutor. `{idMenor}` → 201. Edad a la fecha de inscripción y plazas, comprobadas por la BD | P20 |
 | PATCH | `/api/escuelas/{id}/inscripciones/{idMenor}/baja` | Tutor. Baja del menor; la plaza queda libre (P43) | P19 |
 | GET / POST | `/api/admin/escuelas` | ADMIN. Listar o crear `{idInstalacion, nombre, temporada, fechaInicio, fechaFin, edadMin, edadMax, plazas, horario: [{diaSemana 1–7, horaInicio, horaFin}]}` → 201 `{escuela, sesionesBloqueadas, sesionesOmitidas, reservasCanceladas}`. Bloquea la instalación en cada sesión de la temporada; las sesiones que caen en un bloqueo previo (festivos) se omiten. Con reservas confirmadas en sus sesiones → 409 `ESCUELA_CON_RESERVAS` (P41) | P19 |
-| GET | `/api/admin/escuelas/{id}/inscritos` | ADMIN. Alumnos con el contacto del tutor | P19 |
+| GET | `/api/admin/escuelas/{id}/inscritos` | ADMIN. Alumnos con el contacto del tutor (P46) y el **contacto de emergencia** del menor (P52, 18/11) | P19, P52 |
 
 Errores nuevos: `EMAIL_EN_USO` (409), `ENTIDAD_OBLIGATORIA` / `ENTIDAD_NO_VALIDA` / `CONVENIO_NO_VIGENTE` (422),
 `NO_REPRESENTANTE` (403), `INSTALACION_NO_DISPONIBLE` (409, ya hay un bloqueo), `EVENTO_NO_DISPONIBLE`,
@@ -85,17 +91,17 @@ Todas las rutas son solo para ADMIN.
 |---|---|---|---|
 | GET / POST | `/api/admin/instalaciones` | Todas (incluidas las desactivadas) con horario y reservas futuras · alta `{idTipo, nombre, ubicacion?, aforo, duracionFranjaMin 15–240, descripcion?, horario?: [{diaSemana, horaApertura, horaCierre}]}`. Sin horario se aplica el general de P11 | F06, P11, P12 |
 | PUT | `/api/admin/instalaciones/{id}` | Edita datos y duración de franja; `horario` nulo no lo cambia y uno nuevo lo sustituye | F06, P12 |
-| PATCH | `/api/admin/instalaciones/{id}/desactivar` · `/activar` | Baja (desactivación) y reactivación. Con reservas futuras → 409 `INSTALACION_CON_RESERVAS` (❓P47) | F06 |
-| GET / POST | `/api/admin/usuarios?rol=&texto=` | Lista con filtros · alta `{nombre, apellidos, email, telefono?, rol: ALUMNADO\|PDI\|PAS\|ADMIN, password}` (❓P48) | F07, P16 |
-| PATCH | `/api/admin/usuarios/{id}/rol` · `/activar` · `/desactivar` | `{rol}`. Un representante solo puede ser EXTERNO; el admin no se desactiva ni se quita el perfil a sí mismo (❓P49) | F07 |
+| PATCH | `/api/admin/instalaciones/{id}/desactivar` · `/activar` | Baja (desactivación) y reactivación. Con reservas futuras → 409 `INSTALACION_CON_RESERVAS` (P47) | F06 |
+| GET / POST | `/api/admin/usuarios?rol=&texto=` | Lista con filtros · alta `{nombre, apellidos, email, telefono?, rol: ALUMNADO\|PDI\|PAS\|ADMIN, password}` (P48) | F07, P16 |
+| PATCH | `/api/admin/usuarios/{id}/rol` · `/activar` · `/desactivar` | `{rol}`. Un representante solo puede ser EXTERNO; el admin no se desactiva ni se quita el perfil a sí mismo (P49) | F07 |
 | GET / POST | `/api/admin/bloqueos?idInstalacion=&desde=&hasta=` | Lista (por defecto, 60 días) · alta `{idInstalacion, inicio, fin, motivo: DOCENCIA\|MANTENIMIENTO\|COMPETICION\|CIERRE\|OTRO, observaciones?}` → `{reservasCanceladas, bloqueo}` | F08, P7 |
-| DELETE | `/api/admin/bloqueos/{id}` | 204. Los de eventos y escuelas → 409 `BLOQUEO_GESTIONADO` (❓P50) | F08 |
+| DELETE | `/api/admin/bloqueos/{id}` | 204. Los de eventos y escuelas → 409 `BLOQUEO_GESTIONADO` (P50) | F08 |
 | POST | `/api/admin/cierres` | `{inicio, fin, observaciones}` → cierre de todas las instalaciones; cubre los huecos alrededor de bloqueos previos (INC-04) | F08, P11 |
 | GET | `/api/admin/reservas?desde=&hasta=&idInstalacion=&estado=&texto=` | Consulta general (por defecto, 30 días; máximo 1000 filas) | F10 |
 | GET / POST | `/api/admin/entidades` | Entidades con convenio con representantes (y pendientes de validar), ausencias y suspensión · alta `{nombre, cif, emailContacto?, telefono?, fechaInicio, fechaFin?, activa}` | P25, P32 |
 | PUT | `/api/admin/entidades/{id}` | Edición | P25 |
 | PATCH | `/api/admin/entidades/{id}/suspender` · `/levantar-suspension` | `{hasta, motivo}`. Solo con 3 o más ausencias en el convenio (409 `AUSENCIAS_INSUFICIENTES`) | P32 |
-| GET | `/api/admin/informes?periodo=SEMANAL\|MENSUAL&fecha=` | Ocupación por instalación y por franja, uso por perfil, cancelaciones y no presentados (❓P51) | P9 |
+| GET | `/api/admin/informes?periodo=SEMANAL\|MENSUAL&fecha=` | Ocupación por instalación y por franja, uso por perfil, cancelaciones y no presentados (en pantalla, P51) | P9 |
 
 Errores nuevos: `INSTALACION_DUPLICADA`, `INSTALACION_CON_RESERVAS`, `BLOQUEO_GESTIONADO` (409);
 `TIPO_NO_VALIDO`, `PERFIL_NO_VALIDO`, `OPERACION_SOBRE_SI_MISMO`, `PERIODO_NO_VALIDO` (422);
@@ -114,7 +120,8 @@ Respuestas `application/problem+json` con un `codigo` estable para el frontend:
 | HTTP | `codigo` | Cuándo |
 |---|---|---|
 | 400 | `DATOS_INVALIDOS` | Falta un campo o tiene mal formato (incluye `errores` por campo) |
-| 401 | `CREDENCIALES_INVALIDAS` | Login incorrecto o usuario desactivado (mismo mensaje en todos los casos) |
+| 401 | `CREDENCIALES_INVALIDAS` | Email o contraseña incorrectos (mismo mensaje en ambos casos, no revela qué falla) |
+| 403 | `CUENTA_INACTIVA` | Contraseña correcta pero cuenta desactivada o representante pendiente de validar (CAM-11, P23) |
 | 403 | `RESERVA_AJENA` | Cancelar una reserva de otra persona |
 | 403 | `PERFIL_NO_AUTORIZADO` | Un usuario externo intenta reservar (P4) |
 | 403 | `USUARIO_SANCIONADO` | Sanción vigente por no presentarse (P3) |
@@ -133,7 +140,9 @@ Respuestas `application/problem+json` con un `codigo` estable para el frontend:
 
 ## Reglas de negocio
 
-Detalle en [`../docs/requisitos-cliente.md`](../docs/requisitos-cliente.md) (**validadas por el cliente el 25/10/2026**).
+Detalle en [`../docs/requisitos-cliente.md`](../docs/requisitos-cliente.md) (P1–P22 validadas el 25/10/2026, P23–P46 el
+11/11 y P47–P60 el 18/11). La tabla recoge las reglas del núcleo; las de la Variación 7 están junto a cada ruta del
+contrato y en [`../docs/hito2/analisis-validacion-reglas.md`](../docs/hito2/analisis-validacion-reglas.md).
 
 | Regla | Dónde se garantiza |
 |---|---|
@@ -175,5 +184,7 @@ Las pruebas de integración levantan PostgreSQL con los mismos `01_schema.sql` y
 y fijan el reloj al 23/10/2026 10:00, así que dan el mismo resultado se ejecuten el día que se ejecuten.
 Incluyen dos pruebas de concurrencia: 10 peticiones HTTP simultáneas por la misma franja → 1 × 201 y 9 × 409 (P10),
 y una misma persona pidiendo 5 franjas del mismo día a la vez → solo 1 reserva (P1).
+
+Resultado a 19/11/2026: 46 pruebas unitarias y 133 de integración, todas correctas.
 
 > ¿Sin `mvnw`? Generadlo una vez con `mvn -N wrapper:wrapper` (o abrid el proyecto en IntelliJ, que trae Maven).

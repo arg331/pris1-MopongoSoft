@@ -1,50 +1,63 @@
 @if (auth.usuario(); as usuario) {
-  <header class="barra">
-    <a class="marca" routerLink="/instalaciones">
-      <mat-icon aria-hidden="true">sports_tennis</mat-icon>
-      <span>SAD-UAL</span>
-    </a>
-    <nav aria-label="Principal">
-      <a mat-button routerLink="/instalaciones" routerLinkActive="activo">
-        <mat-icon>calendar_month</mat-icon><span class="texto">Reservar</span>
+  <div class="armazon">
+    <!-- Escritorio: barra lateral -->
+    <aside class="lateral" aria-label="Navegación principal">
+      <a class="marca" routerLink="/instalaciones">
+        <span class="logo" aria-hidden="true"><mat-icon>sports_handball</mat-icon></span>
+        <span class="marca-texto">
+          <strong>SAD-UAL</strong>
+          <small>Deportes · Universidad de Almería</small>
+        </span>
       </a>
-      @if (usuario.puedeReservar) {
-        <a mat-button routerLink="/mis-reservas" routerLinkActive="activo">
-          <mat-icon>event_available</mat-icon><span class="texto">Mis reservas</span>
-        </a>
-      }
-      @if (!auth.esAdmin()) {
-        <a mat-button routerLink="/eventos" routerLinkActive="activo">
-          <mat-icon>celebration</mat-icon><span class="texto">Eventos</span>
-        </a>
-      }
-      @if (auth.puedeTutelar()) {
-        <a mat-button routerLink="/escuelas" routerLinkActive="activo">
-          <mat-icon>child_care</mat-icon><span class="texto">Escuelas</span>
-        </a>
-      }
-      @if (auth.esRepresentante()) {
-        <a mat-button routerLink="/institucional" routerLinkActive="activo">
-          <mat-icon>apartment</mat-icon><span class="texto">Institucional</span>
-        </a>
-      }
-      @if (auth.esAdmin()) {
-        <a mat-button routerLink="/admin" routerLinkActive="activo">
-          <mat-icon>admin_panel_settings</mat-icon><span class="texto">Administración</span>
+
+      <nav class="nav-lateral" aria-label="Principal">
+        @for (e of enlaces(); track e.ruta) {
+          <a [routerLink]="e.ruta" routerLinkActive="activo">
+            <mat-icon aria-hidden="true">{{ e.icono }}</mat-icon>
+            <span>{{ e.texto }}</span>
+          </a>
+        }
+      </nav>
+
+      <div class="tarjeta-usuario">
+        <span class="avatar" aria-hidden="true">{{ iniciales() }}</span>
+        <span class="datos">
+          <strong>{{ usuario.nombre }}</strong>
+          <small [title]="usuario.rolNombre">{{ usuario.rolNombre }}</small>
+        </span>
+        <button mat-icon-button type="button" (click)="auth.logout()" aria-label="Cerrar sesión"
+                matTooltip="Cerrar sesión">
+          <mat-icon>logout</mat-icon>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Móvil: cabecera compacta -->
+    <header class="cabecera-movil">
+      <a class="marca" routerLink="/instalaciones">
+        <span class="logo" aria-hidden="true"><mat-icon>sports_handball</mat-icon></span>
+        <strong>SAD-UAL</strong>
+      </a>
+      <span class="rol">{{ usuario.rol }}</span>
+      <button mat-icon-button type="button" (click)="auth.logout()" aria-label="Cerrar sesión">
+        <mat-icon>logout</mat-icon>
+      </button>
+    </header>
+
+    <main class="contenido">
+      <router-outlet />
+    </main>
+
+    <!-- Móvil: barra inferior flotante -->
+    <nav class="nav-inferior" aria-label="Principal (móvil)">
+      @for (e of enlaces(); track e.ruta) {
+        <a [routerLink]="e.ruta" routerLinkActive="activo">
+          <mat-icon aria-hidden="true">{{ e.icono }}</mat-icon>
+          <span>{{ e.texto }}</span>
         </a>
       }
     </nav>
-    <div class="usuario">
-      <span class="nombre">{{ usuario.nombre }}</span>
-      <span class="rol" [title]="usuario.rolNombre">{{ usuario.rol }}</span>
-      <button mat-icon-button type="button" (click)="auth.logout()" aria-label="Cerrar sesión" title="Cerrar sesión">
-        <mat-icon>logout</mat-icon>
-      </button>
-    </div>
-  </header>
-  <main class="contenido">
-    <router-outlet />
-  </main>
+  </div>
 } @else {
   <router-outlet />
 }

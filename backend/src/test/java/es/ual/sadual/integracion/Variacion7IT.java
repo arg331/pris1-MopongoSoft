@@ -583,6 +583,18 @@ class Variacion7IT extends AbstractIntegracionIT {
         }
 
         @Test
+        void P52_la_administracion_ve_el_contacto_de_emergencia_de_los_inscritos() throws Exception {
+            enviar(get("/api/admin/escuelas/{id}/inscritos", ESCUELA_NATACION), ADMIN, null)
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$[0].menor").value("Hugo Ruiz Campos"))
+                    .andExpect(jsonPath("$[0].telefonoTutor").value("600000006"))
+                    .andExpect(jsonPath("$[0].contactoEmergenciaNombre").value("Antonio Ruiz Gómez (abuelo)"))
+                    .andExpect(jsonPath("$[0].contactoEmergenciaTelefono").value("600000007"));
+            enviar(get("/api/admin/escuelas/{id}/inscritos", ESCUELA_NATACION), TUTORA, null)
+                    .andExpect(status().isForbidden());
+        }
+
+        @Test
         void P42_un_cierre_posterior_cancela_la_sesion_de_la_escuela() throws Exception {
             assertThat(estadoFranja(INST_PISCINA_2, "2026-11-02", "17:00")).isEqualTo("BLOQUEADA");
             enviar(post("/api/admin/cierres"), ADMIN, Map.of("inicio", "2026-11-02T00:00:00",

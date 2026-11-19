@@ -23,7 +23,7 @@ Leyenda del estado: ✅ implementado en la Release V1 · 🟡 parcial · ⏳ pla
 | P6 | Pago | Fase posterior. El sistema no procesa pagos; como mucho reflejará si una reserva está pagada. | ⛔ V1 |
 | P7 | Bloqueos | Solo la administración. **El bloqueo tiene prioridad**: las reservas afectadas se cancelan y el usuario lo ve en "Mis reservas" (sin notificaciones en V1). | ✅ regla en BD · ✅ pantalla (rama pendiente de PR) |
 | P8 | Datos y autenticación | Email y contraseña (nombre, apellidos, email, teléfono opcional, perfil). Autenticación desacoplada para conectar el acceso institucional de la UAL (R4). | ✅ |
-| P9 | Informes | Incremento 3: ocupación por instalación y franja, uso por perfil, cancelaciones y no presentados; consulta semanal y mensual. | ✅ API y pantalla (rama pendiente de PR) · ❓ cálculo (P51) |
+| P9 | Informes | Incremento 3: ocupación por instalación y franja, uso por perfil, cancelaciones y no presentados; consulta semanal y mensual. | ✅ API y pantalla (rama pendiente de PR) · ✅ cálculo (P51) |
 | P10 | Concurrencia | Solo una reserva se confirma; la otra persona recibe "la franja ya está reservada". | ✅ |
 
 ## B. Núcleo del sistema (P11–P16)
@@ -77,7 +77,7 @@ Las decisiones son reglas oficiales y están implementadas en la rama `feature/v
 | P29 | Vigencia del convenio | Solo durante el convenio | 422 `CONVENIO_NO_VIGENTE` | ✅ |
 | P30 | Rechazo | Motivo obligatorio | — | ✅ |
 | P31 | Cancelación | El representante cancela hasta el inicio | — | ✅ |
-| P32 | No presentado en una institucional | Se registra para la entidad; con 3 ausencias no justificadas en el convenio, la administración puede suspender temporalmente las nuevas reservas | Sin sanción al representante (trigger); ausencias por entidad; suspensión manual con fecha y motivo (403 `ENTIDAD_SUSPENDIDA`) | ✅ · ❓P53 |
+| P32 | No presentado en una institucional | Se registra para la entidad; con 3 ausencias no justificadas en el convenio, la administración puede suspender temporalmente las nuevas reservas | Sin sanción al representante (trigger); ausencias por entidad; suspensión manual con fecha y motivo (403 `ENTIDAD_SUSPENDIDA`) | ✅ · ✅P53 |
 | P33 | Inscripción en eventos | La administración elige por evento: solo comunidad UAL o comunidad + externos | Campo `evento.publico`; los externos solo ven los eventos abiertos a ellos | ✅ |
 | P34 | Bloqueo de instalaciones | Desde la creación del evento | — | ✅ |
 | P35 | Plazos de inscripción | Una inscripción por persona; inscripción y anulación hasta 24 h antes | `sadual.eventos.cierre-inscripcion=PT24H` (422 `INSCRIPCION_CERRADA`) | ✅ |
@@ -89,27 +89,32 @@ Las decisiones son reglas oficiales y están implementadas en la rama `feature/v
 | P41 | Escuela con reservas | No se crea si hay reservas confirmadas en sus franjas | 409 `ESCUELA_CON_RESERVAS` | ✅ |
 | P42 | Cierres y escuelas | Un cierre posterior cancela la sesión de la escuela (sin recuperarla) | `fn_cerrar_instalaciones` borra esas sesiones (prueba T24) | ✅ |
 | P43 | Inscripciones y bajas | En cualquier momento mientras haya plazas | — | ✅ |
-| P44 | Datos del menor | Además: teléfono del tutor y contacto de emergencia; sin datos médicos | Columnas nuevas en `menor` | ✅ · ❓P52 |
+| P44 | Datos del menor | Además: teléfono del tutor y contacto de emergencia; sin datos médicos | Columnas nuevas en `menor` | ✅ |
 | P45 | Consentimiento RGPD | Obligatorio; si se retira se eliminan los datos y se cancelan las inscripciones; texto legal de la UAL | `DELETE /api/menores/{id}` (eliminación); texto provisional en pantalla | ✅ |
 | P46 | Datos visibles para la administración | Menor (nombre, fecha de nacimiento) y tutor (nombre, email, teléfono) | — | ✅ |
 
 **Consulta final** ([`cliente/2026-11-11_consulta_final_P47-P60.md`](cliente/2026-11-11_consulta_final_P47-P60.md)). Tras revisar todas las reglas que aplica el sistema frente a
 P1–P46 (análisis en [`hito2/analisis-validacion-reglas.md`](hito2/analisis-validacion-reglas.md)), estas son las
-**únicas** que quedan sin validar. Cada propuesta describe el comportamiento actual del sistema.
+**únicas** que quedaban sin validar. Cada propuesta describe el comportamiento del sistema.
 
-| # | Tema | Propuesta implementada (provisional) | Estado |
+> **Estado: VALIDADO POR EL CLIENTE el 18/11/2026** ([`cliente/2026-11-18_respuesta_cliente_P47-P60.md`](cliente/2026-11-18_respuesta_cliente_P47-P60.md)):
+> *"podéis considerar válidas las soluciones propuestas en vuestro documento"*. Aclaró P51 (exportar a PDF o Excel
+> no es obligatorio), P58 (la sanción no impide escuelas ni eventos) y P52, donde eligió la alternativa: la
+> administración también puede consultar el contacto de emergencia (implementado el 18/11/2026).
+
+| # | Tema | Decisión validada | Estado |
 |---|---|---|---|
-| P47 | Baja de una instalación con reservas futuras; cambio de horario | No se permite la baja; las reservas fuera del nuevo horario se mantienen | ❓ |
-| P48 | Alta de la comunidad UAL | Contraseña inicial fijada por la administración; sin cambio obligatorio ni alta masiva | ❓ |
-| P49 | Usuario desactivado | No puede entrar; sus reservas se mantienen; la administración puede cancelar cualquier reserva | ❓ |
-| P50 | Eliminar un bloqueo | La franja se libera; las reservas canceladas no se recuperan | ❓ |
-| P51 | Cálculo de los informes (P9) | Ocupación = horas reservadas ÷ horas abiertas no bloqueadas; semana L–D y mes natural; sin exportación | ❓ |
-| P52 | Contacto de emergencia (P44) | Lo ve y corrige el tutor; la administración ve lo de P46 | ❓ |
-| P53 | Ausencias justificadas (P32) | Solo se marcan «no presentado» las no justificadas | ❓ |
-| P54 | Actividad sobre un bloqueo existente | No se pisan bloqueos (evento o bloqueo rechazado; sesiones de escuela omitidas); solo el cierre general se impone (P42) | ❓ |
-| P55 | Reservas pendientes al crear una escuela (P41) | También impiden crearla | ❓ |
-| P56 | Cancelar una escuela | Se liberan sus sesiones futuras y los inscritos pasan a baja; el horario no se edita | ❓ |
-| P57 | Administración en eventos | No se inscribe | ❓ |
-| P58 | Sanción P3 y eventos/escuelas | La sanción solo afecta a reservas individuales | ❓ |
-| P59 | Convenio terminado o entidad desactivada | Sin nuevas reservas; las ya autorizadas se mantienen y la administración puede cancelarlas | ❓ |
-| P60 | Varios representantes por entidad (P25) | Cada uno ve y cancela solo sus solicitudes; la administración ve todas | ❓ |
+| P47 | Baja de una instalación con reservas futuras; cambio de horario | No se permite la baja; las reservas fuera del nuevo horario se mantienen | ✅ |
+| P48 | Alta de la comunidad UAL | Contraseña inicial fijada por la administración; sin cambio obligatorio ni alta masiva | ✅ |
+| P49 | Usuario desactivado | No puede entrar; sus reservas se mantienen; la administración puede cancelar cualquier reserva | ✅ |
+| P50 | Eliminar un bloqueo | La franja se libera; las reservas canceladas no se recuperan | ✅ |
+| P51 | Cálculo de los informes (P9) | Ocupación = horas reservadas ÷ horas abiertas no bloqueadas; semana L–D y mes natural; sin exportación | ✅ |
+| P52 | Contacto de emergencia (P44) | Lo ve y corrige el tutor; **la administración también lo consulta** en la lista de inscritos de cada escuela (alternativa elegida por el cliente) | ✅ |
+| P53 | Ausencias justificadas (P32) | Solo se marcan «no presentado» las no justificadas | ✅ |
+| P54 | Actividad sobre un bloqueo existente | No se pisan bloqueos (evento o bloqueo rechazado; sesiones de escuela omitidas); solo el cierre general se impone (P42) | ✅ |
+| P55 | Reservas pendientes al crear una escuela (P41) | También impiden crearla | ✅ |
+| P56 | Cancelar una escuela | Se liberan sus sesiones futuras y los inscritos pasan a baja; el horario no se edita | ✅ |
+| P57 | Administración en eventos | No se inscribe | ✅ |
+| P58 | Sanción P3 y eventos/escuelas | La sanción solo afecta a reservas individuales | ✅ |
+| P59 | Convenio terminado o entidad desactivada | Sin nuevas reservas; las ya autorizadas se mantienen y la administración puede cancelarlas | ✅ |
+| P60 | Varios representantes por entidad (P25) | Cada uno ve y cancela solo sus solicitudes; la administración ve todas | ✅ |

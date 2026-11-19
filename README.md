@@ -51,10 +51,10 @@ horario L–V 8–22 y sábados 9–14 con festivos como cierres (P11), franjas 
 | V7 | Escuelas, menores y consentimiento RGPD (P19, P20, P22) | Incremento 2 | ✅ backend + pantallas (tutor y administración) |
 | Inc. 3 | Informes de ocupación, uso, cancelaciones y no presentados (P9) | Incremento 3 | ✅ backend + pantalla |
 
-> Estado a 09/11/2026: todo lo marcado como Incremento 2/3 está implementado y probado en la rama
-> `feature/variacion7-backend`, **pendiente de pull request y revisión** para entrar en `main`. Las reglas
-> de la Variación 7 (P23–P46) las validó el cliente el 11/11/2026 y ya están aplicadas; las marcadas con ❓
-> en `docs/requisitos-cliente.md` (P47–P60) esperan su respuesta.
+> Estado a 19/11/2026: todo lo marcado como Incremento 2/3 está en `main` (PR #20 y la PR de la interfaz
+> nueva y P52). **Todas las reglas de negocio están validadas por el cliente**: P1–P22 el 25/10, P23–P46 el
+> 11/11 y P47–P60 el 18/11. En P52 el cliente eligió la alternativa (la administración también ve el contacto
+> de emergencia de los menores), ya implementada (CAM-12).
 
 ## Tecnologías
 
@@ -75,13 +75,16 @@ grupo-07/                      (organización GitHub pris1)
 ├── frontend/                  → App Angular (ver frontend/README.md)
 ├── backend/                   → API REST Spring Boot (ver backend/README.md)
 ├── database/
-│   ├── 01_schema.sql          → Esquema completo (14 tablas, triggers, funciones y vistas)
-│   ├── 02_seed.sql            → Datos de demostración para el Hito 1
-│   └── 03_pruebas.sql         → Pruebas del modelo de datos (T1–T16)
+│   ├── 01_schema.sql          → Esquema completo (15 tablas, triggers, funciones y vistas)
+│   ├── 02_seed.sql            → Datos de demostración (incluida la Variación 7)
+│   ├── 03_pruebas.sql         → Pruebas del modelo de datos (T1–T25)
+│   └── 04_demo_hito2.sql      → Reservas de la semana de la defensa del Hito 2
 └── docs/
     ├── funcionalidades-v1.md  → Priorización MoSCoW, criterios de aceptación y estado
-    ├── requisitos-cliente.md  → Preguntas P1–P22 y decisiones validadas por el cliente
-    ├── cliente/               → Propuesta enviada (24/10) y respuesta del cliente (25/10)
+    ├── requisitos-cliente.md  → Preguntas P1–P60 y decisiones validadas por el cliente
+    ├── cliente/               → Consultas enviadas al cliente y sus respuestas (25/10, 11/11 y 18/11)
+    ├── seguimiento/           → Seguimiento y control (Bloque 4): tareas y sprints, incidencias, cambios y métricas
+    ├── hito2/                 → Análisis de validación de reglas y propuesta del expediente
     └── modelo-datos/
         ├── MER.png / MER.pdf                       → Modelo Entidad-Relación
         ├── ModeloRelacional.png / ModeloRelacional.pdf → Modelo relacional (PostgreSQL)
@@ -129,13 +132,14 @@ reservas individuales (P4/P17).
 
 | Qué | Comando | Necesita |
 |---|---|---|
-| Modelo de datos (T1–T23, incluida la Variación 7) | `psql -d sadual -f database/03_pruebas.sql` | BD creada |
+| Modelo de datos (T1–T25, incluida la Variación 7) | `psql -d sadual -f database/03_pruebas.sql` | BD creada |
 | Backend · unitarias | `cd backend && mvn test` | — |
 | Backend · integración (reservas simultáneas, Variación 7, panel de administración e informes) | `cd backend && mvn verify` | Docker |
 | Frontend | `cd frontend && npm test` | — |
 
-Resultados a 11/11/2026: modelo de datos 23/23 · backend 46 unitarias y 128 de integración · frontend 76 pruebas
-y build de producción sin avisos. Además se recorrieron las pantallas con Chrome (sin errores de JavaScript).
+Resultados a 19/11/2026: backend 46 unitarias y 133 de integración · frontend 79 pruebas y build de producción
+sin errores · modelo de datos: 23/23 comprobaciones automáticas correctas (T8 y T9 son consultas que se revisan a
+mano y se ejecutan sin errores).
 
 ## Guion de la demo del Hito 1
 
@@ -171,8 +175,10 @@ Con la base de datos recreada (incluye `04_demo_hito2.sql`) y los tres servicios
    anulan las inscripciones y se liberan las instalaciones.
 5. **Escuelas (P19, P20, P22, P39, P44, P45).** Tutora (atajo *Tutora*, o un miembro de la UAL) → *Escuelas* →
    registrar a un menor con teléfono y contacto de emergencia (sin la casilla de consentimiento no se puede) →
-   inscribirlo; con una edad fuera de tramo el sistema lo impide. *Retirar consentimiento* borra sus datos. En el
-   catálogo, la calle 2 de la piscina aparece *Bloqueada · escuela* lunes y miércoles de 17 a 18.
+   inscribirlo; con una edad fuera de tramo el sistema lo impide. El tutor puede corregir el contacto de
+   emergencia y *Retirar consentimiento* borra sus datos. Admin → *Escuelas* → *Inscritos*: aparece el contacto
+   del tutor y el de emergencia (P52). En el catálogo, la calle 2 de la piscina aparece *Bloqueada · escuela*
+   lunes y miércoles de 17 a 18.
 6. **Entidades (P25, P32).** Admin → *Entidades*: representantes, ausencias y suspensión temporal.
 7. **Panel del núcleo común.** *Instalaciones* (alta con el horario general y duración de franja, P12),
    *Usuarios* (alta de un PDI, P16), *Bloqueos y cierres* (cierre por festivo, P11), *Reservas* (consulta
@@ -191,11 +197,10 @@ Con la base de datos recreada (incluye `04_demo_hito2.sql`) y los tres servicios
 
 El modelo de datos (MER y modelo relacional) está en `docs/modelo-datos/`. Para regenerar los diagramas
 tras cambiar el esquema: `python3 docs/modelo-datos/fuentes/generar_diagramas.py` (requiere Graphviz).
-El resto de la documentación del curso (G1–G4) se irá añadiendo a `docs/`.
 
 **Incremento 2 (Variación 7) y seguimiento del proyecto (Hito 2):**
 
 - Contrato de la API de eventos, escuelas, registro y reservas institucionales: [`backend/README.md`](backend/README.md#contrato-de-la-api--incremento-2-variación-7).
-- Decisiones pendientes de validar con el cliente (P23–P46): [`docs/requisitos-cliente.md`](docs/requisitos-cliente.md) y [`docs/cliente/2026-11-09_preguntas_incremento2.md`](docs/cliente/2026-11-09_preguntas_incremento2.md).
+- Reglas validadas por el cliente (P1–P60): [`docs/requisitos-cliente.md`](docs/requisitos-cliente.md), evidencia en [`docs/cliente/`](docs/cliente/) (última respuesta: [`2026-11-18_respuesta_cliente_P47-P60.md`](docs/cliente/2026-11-18_respuesta_cliente_P47-P60.md)) y comprobación regla a regla en [`docs/hito2/analisis-validacion-reglas.md`](docs/hito2/analisis-validacion-reglas.md).
 - Seguimiento y control (Bloque 4): [registro de tareas y sprints](docs/seguimiento/01_registro-tareas-y-sprints.md), [incidencias](docs/seguimiento/02_registro-incidencias.md), [solicitudes de cambio](docs/seguimiento/03_registro-cambios.md) y [métricas](docs/seguimiento/04_metricas-y-control.md).
 - Propuesta de los 11 artefactos del expediente: [`docs/hito2/expediente-11-artefactos.md`](docs/hito2/expediente-11-artefactos.md).

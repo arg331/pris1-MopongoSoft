@@ -49,7 +49,7 @@ export class Variacion7Service {
     return this.http.post<Menor>('/api/menores', menor);
   }
 
-  /** ❓P52: el tutor corrige el teléfono y el contacto de emergencia del menor. */
+  /** P52: el tutor corrige el teléfono y el contacto de emergencia del menor. */
   actualizarContacto(idMenor: number, contacto: Pick<NuevoMenor, 'telefonoTutor' | 'contactoEmergenciaNombre'
     | 'contactoEmergenciaTelefono'>): Observable<Menor> {
     return this.http.patch<Menor>(`/api/menores/${idMenor}/contacto`, contacto);

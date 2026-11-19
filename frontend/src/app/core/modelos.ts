@@ -264,6 +264,9 @@ export interface InscritoEscuela {
   tutor: string;
   emailTutor: string;
   telefonoTutor: string | null;
+  /** P52: la administración también ve el contacto de emergencia del menor. */
+  contactoEmergenciaNombre: string;
+  contactoEmergenciaTelefono: string;
   fechaInscripcion: string;
   estado: 'ACTIVA' | 'BAJA';
 }

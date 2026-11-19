@@ -21,7 +21,7 @@ const HOY = '2026-10-23';
 describe('InstalacionesPage (F02 + F03 + F04)', () => {
   let fixture: ComponentFixture<InstalacionesPage>;
   let html: HTMLElement;
-  const api = { tipos: vi.fn(), catalogo: vi.fn(), disponibilidad: vi.fn() };
+  const api = { tipos: vi.fn(), catalogo: vi.fn(), disponibilidad: vi.fn(), resumenDelDia: vi.fn() };
   const reservas = { crear: vi.fn() };
   const usuario = signal<Usuario | null>(ALUMNA);
 
@@ -41,6 +41,7 @@ describe('InstalacionesPage (F02 + F03 + F04)', () => {
     reservas.crear.mockReset();
     usuario.set(ALUMNA);
     api.tipos.mockReturnValue(of(TIPOS));
+    api.resumenDelDia.mockReturnValue(of({ 1: { total: 4, libres: 1, reservadas: 1, cerrada: false } }));
     api.catalogo.mockReturnValue(of([PADEL_1, TENIS_1]));
     api.disponibilidad.mockImplementation((_id: number, fecha: string) => of(disponibilidadPadel(fecha)));
 
@@ -69,6 +70,11 @@ describe('InstalacionesPage (F02 + F03 + F04)', () => {
     expect(tarjetas[0].textContent).toContain('Pista de pádel 1');
     expect(tarjetas[0].textContent).toContain('Zona exterior norte');
     expect(tarjetas[0].textContent).toContain('Aforo 4');
+  });
+
+  it('muestra en cada tarjeta las franjas libres de hoy', () => {
+    expect(api.resumenDelDia).toHaveBeenCalledWith([1, 3], HOY);
+    expect(html.querySelector('button.instalacion .badge.disp')?.textContent).toContain('1 libre hoy');
   });
 
   it('filtra el catálogo por tipo', async () => {
@@ -193,6 +199,16 @@ describe('InstalacionesPage (F02 + F03 + F04)', () => {
 
     expect(franjas().length).toBe(4);
     expect(html.querySelector('[role=alert]')).toBeNull();
+  });
+
+  it('P11: un festivo o cierre extraordinario se muestra como "Cerrado"', async () => {
+    const d = disponibilidadPadel(HOY);
+    d.franjas[3] = { ...d.franjas[3], motivo: 'CIERRE' };
+    api.disponibilidad.mockReturnValue(of(d));
+    await pulsar(html.querySelector('button.instalacion'));
+
+    expect(franjas()[3].textContent).toContain('Cerrado');
+    expect(franjas()[3].disabled).toBe(true);
   });
 
   it('avisa cuando la instalación no abre ese día', async () => {
